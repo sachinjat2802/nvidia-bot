@@ -1,0 +1,28 @@
+{
+  "id": "1770144277760-uqtu6ogrn",
+  "title": "4",
+  "createdAt": 1770144277760,
+  "updatedAt": 1770144321275,
+  "messages": [
+    {
+      "id": "1770144277744",
+      "role": "user",
+      "content": "4"
+    },
+    {
+      "id": "1770144284547",
+      "role": "assistant",
+      "content": "<think>The user just sent \"4\". This is a very minimal message without context. It could be:\n\n1. A mistake (they meant to send something else)\n2. A test message\n3. Part of a larger conversation I don't have context for\n4. Just want to say hello in some casual way\n5. Asking about the number 4 specifically\n\nAs Moonu Bot, I should respond helpfully and politely. Since this is so minimal and I don't have any context, I should acknowledge it and ask for clarification in a friendly way. I need to follow the rules:\n- Don't output internal reasoning\n- Output only the final response\n- Tailor to a 25-year-old (so professional but casual, not overly simple or condescending)\n\nI'll give a friendly, brief response asking how I can help.\n</think>\n\nHey! I received \"4\" - not sure if that was intentional or if you meant to send something else. 😊\n\nIs there something I can help you with today? Whether it's coding, questions, or anything else, I'm here!"
+    },
+    {
+      "id": "1770144320398",
+      "role": "user",
+      "content": "how are you"
+    },
+    {
+      "id": "1770144321193",
+      "role": "assistant",
+      "content": "I'm here and ready—thanks for asking! How about you? Doing well today? 😊"
+    }
+  ]
+}

@@ -1,0 +1,66 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+    --primary: #00e5ff;
+    --primary-hover: #00b8d4;
+    --background: #0a0a0f;
+    --surface: #12121e;
+    --surface-hover: #1a1a2b;
+    --text-primary: #f0f0f3;
+    --text-secondary: #b8b9c1;
+    --text-muted: #888995;
+    --border: rgba(255, 255, 255, 0.08);
+}
+
+body {
+    background-color: var(--background);
+    color: var(--text-primary);
+    overflow: hidden;
+    /* Prevent body scroll */
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--primary);
+    box-shadow: 0 0 10px var(--primary);
+}
+
+/* Utilities */
+.glass {
+    background: rgba(18, 18, 30, 0.7);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--border);
+}
+
+.glow-text {
+    text-shadow: 0 0 10px var(--primary);
+}
+
+.glow-border {
+    box-shadow: 0 0 15px rgba(0, 229, 255, 0.15);
+}
+
+.hide-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+    display: none;
+}

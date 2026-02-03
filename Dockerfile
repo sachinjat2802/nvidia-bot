@@ -1,20 +1,37 @@
-FROM node:20-slim
+# Build Stage
+FROM node:20-slim AS builder
 
 WORKDIR /app
 
-# Install dependencies first (for better caching)
+# Copy root dependency manifests
 COPY package*.json ./
+
+# Install all dependencies (including devDependencies for build)
 RUN npm install
 
-# Copy source code
+# Copy the entire project
 COPY . .
 
-# Build the application
+# Build the Next.js application
 RUN npm run build
 
-# Expose the default port (Hugging Face uses 7860, Render uses 10000)
-ENV PORT=7860
-EXPOSE 7860
+# Production Stage
+FROM node:20-slim AS runner
 
-# Command to run the application using the compiled JS
-CMD ["npm", "run", "web"]
+WORKDIR /app
+
+ENV NODE_ENV=production
+ENV PORT=10000
+
+# Copy necessary files from the builder stage
+COPY --from=builder /app/package*.json ./
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/.next ./.next
+COPY --from=builder /app/public ./public
+COPY --from=builder /app/src ./src
+
+# Expose the application port
+EXPOSE 10000
+
+# Start the Next.js server
+CMD ["npm", "start"]

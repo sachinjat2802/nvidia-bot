@@ -1,11 +1,21 @@
 services:
   - type: web
-    name: monnu-bot
-    runtime: docker
+    name: moonu-bot
+    runtime: node
     plan: free
+    region: singapore
+    buildCommand: npm install && npm run build
+    startCommand: npm run start
     envVars:
       - key: NVIDIA_API_KEY
-        sync: false # You will set this manually in the Render dashboard
-      - key: PORT
-        value: 10000
+        sync: false
+      - key: NVIDIA_BASE_URL
+        value: https://integrate.api.nvidia.com/v1
+      - key: DEFAULT_MODEL
+        value: meta/llama-3.1-70b-instruct
+      - key: CHAT_HISTORY_LIMIT
+        value: 50
+      - key: NODE_VERSION
+        value: 20.11.0
     healthCheckPath: /
+    autoDeploy: true

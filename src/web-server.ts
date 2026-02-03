@@ -50,9 +50,11 @@ const PROJECT_ROOT = process.cwd();
 const WORKFLOW_DATA_DIR = path.join(PROJECT_ROOT, 'workflow-data');
 const GENERATED_IMAGES_DIR = path.join(PROJECT_ROOT, 'generated-images');
 const UPLOADS_DIR = path.join(PROJECT_ROOT, 'uploads');
-const PUBLIC_DIR = fs.existsSync(path.join(PROJECT_ROOT, 'src', 'public'))
-    ? path.join(PROJECT_ROOT, 'src', 'public')
-    : path.join(PROJECT_ROOT, 'public');
+const PUBLIC_DIR = fs.existsSync(path.join(PROJECT_ROOT, 'client', 'dist'))
+    ? path.join(PROJECT_ROOT, 'client', 'dist')
+    : fs.existsSync(path.join(PROJECT_ROOT, 'src', 'public'))
+        ? path.join(PROJECT_ROOT, 'src', 'public')
+        : path.join(PROJECT_ROOT, 'public');
 
 [WORKFLOW_DATA_DIR, GENERATED_IMAGES_DIR, UPLOADS_DIR].forEach(dir => {
     if (!fs.existsSync(dir)) {
