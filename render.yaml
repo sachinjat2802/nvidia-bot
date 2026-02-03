@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: monnu-bot
+    runtime: docker
+    plan: free
+    envVars:
+      - key: NVIDIA_API_KEY
+        sync: false # You will set this manually in the Render dashboard
+      - key: PORT
+        value: 10000
+    healthCheckPath: /
