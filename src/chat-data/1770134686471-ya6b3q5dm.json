@@ -1,0 +1,16 @@
+{
+  "id": "1770134686471-ya6b3q5dm",
+  "title": "hi",
+  "createdAt": 1770134686471,
+  "updatedAt": 1770134686471,
+  "messages": [
+    {
+      "role": "user",
+      "content": "hi"
+    },
+    {
+      "role": "assistant",
+      "content": "How's it going? Is there something I can help you with or would you like to chat?"
+    }
+  ]
+}

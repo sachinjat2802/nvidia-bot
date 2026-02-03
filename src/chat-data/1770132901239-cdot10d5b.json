@@ -1,0 +1,16 @@
+{
+  "id": "1770132901239-cdot10d5b",
+  "title": "hi",
+  "createdAt": 1770132901239,
+  "updatedAt": 1770132901239,
+  "messages": [
+    {
+      "role": "user",
+      "content": "hi"
+    },
+    {
+      "role": "assistant",
+      "content": "<think>The user just said \"hi\", which is a simple greeting. I should respond in a friendly, welcoming manner and offer to help them with whatever they need.\n</think>\n\nHi there! 👋 How can I help you today?"
+    }
+  ]
+}

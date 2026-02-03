@@ -1,0 +1,67 @@
+{
+    "id": "conditional-processing",
+    "name": "Conditional Processing Workflow",
+    "description": "Demonstrates conditional branching based on LLM output",
+    "version": "1.0.0",
+    "steps": [
+        {
+            "id": "analyze-sentiment",
+            "type": "llm",
+            "name": "Analyze Sentiment",
+            "description": "Analyze the sentiment of the input text",
+            "llmConfig": {
+                "model": "meta/llama-3.1-70b-instruct",
+                "systemPrompt": "You are a sentiment analyzer. Respond with only one word: 'positive', 'negative', or 'neutral'.",
+                "content": "Analyze the sentiment of this text: '${input}'"
+            },
+            "outputMapping": {
+                "sentiment": "response"
+            }
+        },
+        {
+            "id": "check-sentiment",
+            "type": "conditional",
+            "name": "Check Sentiment",
+            "description": "Branch based on sentiment",
+            "conditionalConfig": {
+                "condition": "context.sentiment && context.sentiment.response.toLowerCase().includes('positive')",
+                "thenStepId": "positive-response",
+                "elseStepId": "negative-response"
+            }
+        },
+        {
+            "id": "positive-response",
+            "type": "llm",
+            "name": "Generate Positive Response",
+            "description": "Generate an encouraging response for positive sentiment",
+            "dependsOn": [
+                "check-sentiment"
+            ],
+            "llmConfig": {
+                "model": "meta/llama-3.1-70b-instruct",
+                "systemPrompt": "You are an encouraging assistant. Respond positively to the user.",
+                "content": "The sentiment was positive. Generate an enthusiastic response to: '${input}'"
+            }
+        },
+        {
+            "id": "negative-response",
+            "type": "llm",
+            "name": "Generate Supportive Response",
+            "description": "Generate a supportive response for negative sentiment",
+            "dependsOn": [
+                "check-sentiment"
+            ],
+            "llmConfig": {
+                "model": "meta/llama-3.1-70b-instruct",
+                "systemPrompt": "You are a supportive assistant. Be empathetic and helpful.",
+                "content": "The sentiment was negative or neutral. Generate a supportive response to: '${input}'"
+            }
+        }
+    ],
+    "globalContext": {},
+    "retryPolicy": {
+        "maxRetries": 1,
+        "backoffMs": 1000
+    },
+    "timeoutMs": 120000
+}

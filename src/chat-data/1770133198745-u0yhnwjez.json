@@ -1,0 +1,24 @@
+{
+  "id": "1770133198745-u0yhnwjez",
+  "title": "hi",
+  "createdAt": 1770133198745,
+  "updatedAt": 1770133226702,
+  "messages": [
+    {
+      "role": "user",
+      "content": "hi"
+    },
+    {
+      "role": "assistant",
+      "content": "How's it going? Is there something I can help you with or would you like to chat?"
+    },
+    {
+      "role": "user",
+      "content": "12"
+    },
+    {
+      "role": "assistant",
+      "content": "12 can represent many things depending on the context! Could you provide more details or let me know what specific information you're looking for related to the number 12?"
+    }
+  ]
+}

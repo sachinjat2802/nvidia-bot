@@ -1,0 +1,28 @@
+{
+  "id": "1770131768881-9tk3az11n",
+  "title": "4",
+  "createdAt": 1770131768881,
+  "updatedAt": 1770131985844,
+  "messages": [
+    {
+      "role": "user",
+      "content": "4"
+    },
+    {
+      "role": "user",
+      "content": "hi"
+    },
+    {
+      "role": "assistant",
+      "content": " Hello! How can I assist you today?"
+    },
+    {
+      "role": "user",
+      "content": "update workflow to have test steps"
+    },
+    {
+      "role": "assistant",
+      "content": " Sure, I'd be happy to help you update your workflow to include test steps. However, I need a bit more information to provide accurate guidance. Could you please provide some details about:\n\n1. The current workflow process.\n2. The type of tests you want to include (e.g., unit tests, integration tests, system tests, etc.).\n3. Any specific tools or frameworks you're using for testing (e.g., JUnit, Selenium, pytest, etc.).\n4. Where in the workflow you want to include these test steps.\n\nWith more details, I can provide a more tailored update to your workflow."
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "id": "1770136912335-5lw9t52dl",
+  "title": "hi",
+  "createdAt": 1770136912335,
+  "updatedAt": 1770136912335,
+  "messages": [
+    {
+      "role": "user",
+      "content": "hi"
+    },
+    {
+      "role": "assistant",
+      "content": "Okay, the user just said \"hi.\" I should respond warmly. Maybe say hello back and offer help. Keep it friendly and open-ended so they feel comfortable asking anything. I'll go with \"Hello! How can I assist you today?\" That should do it.\n</think>\n\nHello! How can I assist you today?"
+    }
+  ]
+}

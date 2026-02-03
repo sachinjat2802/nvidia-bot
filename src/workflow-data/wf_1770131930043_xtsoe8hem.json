@@ -1,0 +1,38 @@
+{
+  "id": "wf_1770131930043_xtsoe8hem",
+  "workflowId": "my-workflow",
+  "status": "completed",
+  "context": {
+    "_workflowId": "wf_1770131930043_xtsoe8hem",
+    "_stepResults": {
+      "step1": {
+        "stepId": "step1",
+        "status": "success",
+        "startedAt": "2026-02-03T15:18:50.045Z",
+        "output": {
+          "response": "Hello! It's nice to meet you. Is there something I can help you with or would you like to chat?",
+          "tokens": 95
+        },
+        "completedAt": "2026-02-03T15:18:50.726Z",
+        "durationMs": 681
+      }
+    }
+  },
+  "stepResults": [
+    {
+      "stepId": "step1",
+      "status": "success",
+      "startedAt": "2026-02-03T15:18:50.045Z",
+      "output": {
+        "response": "Hello! It's nice to meet you. Is there something I can help you with or would you like to chat?",
+        "tokens": 95
+      },
+      "completedAt": "2026-02-03T15:18:50.726Z",
+      "durationMs": 681
+    }
+  ],
+  "queuedSteps": [],
+  "completedSteps": {},
+  "startedAt": "2026-02-03T15:18:50.043Z",
+  "completedAt": "2026-02-03T15:18:50.729Z"
+}

@@ -1,0 +1,82 @@
+{
+    "id": "delayed-execution",
+    "name": "Delayed Multi-Model Processing",
+    "description": "Demonstrates delays and multiple LLM calls with different models",
+    "version": "1.0.0",
+    "steps": [
+        {
+            "id": "initial-analysis",
+            "type": "llm",
+            "name": "Initial Analysis",
+            "description": "Perform initial analysis with fast model",
+            "llmConfig": {
+                "model": "nvidia/llama-3.2-3b-instruct",
+                "systemPrompt": "You are a quick analyzer. Provide brief analysis.",
+                "content": "Quick analysis of: '${input}'"
+            },
+            "outputMapping": {
+                "initialAnalysis": "response"
+            }
+        },
+        {
+            "id": "wait-1",
+            "type": "delay",
+            "name": "Wait 2 Seconds",
+            "description": "Add a delay before next step",
+            "dependsOn": [
+                "initial-analysis"
+            ],
+            "delayConfig": {
+                "milliseconds": 2000
+            }
+        },
+        {
+            "id": "deep-analysis",
+            "type": "llm",
+            "name": "Deep Analysis",
+            "description": "Perform deep analysis with powerful model",
+            "dependsOn": [
+                "wait-1"
+            ],
+            "llmConfig": {
+                "model": "meta/llama-3.1-70b-instruct",
+                "systemPrompt": "You are a thorough analyst. Provide detailed, comprehensive analysis.",
+                "content": "Based on this quick analysis: '${initialAnalysis}', provide a detailed analysis of: '${input}'"
+            },
+            "outputMapping": {
+                "deepAnalysis": "response"
+            }
+        },
+        {
+            "id": "wait-2",
+            "type": "delay",
+            "name": "Wait 1 Second",
+            "description": "Add a delay before final step",
+            "dependsOn": [
+                "deep-analysis"
+            ],
+            "delayConfig": {
+                "milliseconds": 1000
+            }
+        },
+        {
+            "id": "final-summary",
+            "type": "code",
+            "name": "Compile Summary",
+            "description": "Combine both analyses into final summary",
+            "dependsOn": [
+                "wait-2"
+            ],
+            "codeConfig": {
+                "language": "javascript",
+                "code": "const quick = context.initialAnalysis.response;\nconst deep = context.deepAnalysis.response;\nreturn {\n  summary: `Quick: ${quick.substring(0, 100)}...\\nDeep: ${deep.substring(0, 200)}...`,\n  quickAnalysis: quick,\n  deepAnalysis: deep,\n  timestamp: new Date().toISOString()\n};"
+            }
+        }
+    ],
+    "globalContext": {},
+    "retryPolicy": {
+        "maxRetries": 3,
+        "backoffMs": 2000
+    },
+    "timeoutMs": 300000
+}
