@@ -10,7 +10,7 @@ import { NVIDIAClient } from './nvidia-client';
 import fs from 'fs/promises';
 import path from 'path';
 
-const DEFAULT_PERSISTENCE_DIR = path.join(__dirname, 'workflow-data');
+const DEFAULT_PERSISTENCE_DIR = path.join(process.cwd(), 'workflow-data');
 
 export class WorkflowEngine {
     private client: NVIDIAClient;
@@ -29,8 +29,12 @@ export class WorkflowEngine {
         this.persistenceEnabled = options.enablePersistence !== false;
 
         if (this.persistenceEnabled) {
-            this.ensurePersistenceDir();
-            this.loadPersistedExecutions();
+            import('fs').then(fsSync => {
+                if (!fsSync.existsSync(this.persistenceDir)) {
+                    fsSync.mkdirSync(this.persistenceDir, { recursive: true });
+                }
+                this.loadPersistedExecutions();
+            });
         }
     }
 
