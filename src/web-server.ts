@@ -44,9 +44,25 @@ function getModelAlias(modelId: string): { alias: string; description: string } 
 
 const config = loadConfig();
 const client = new NVIDIAClient(config);
+
+// Ensure data directories exist
+const PROJECT_ROOT = process.cwd();
+const WORKFLOW_DATA_DIR = path.join(PROJECT_ROOT, 'workflow-data');
+const GENERATED_IMAGES_DIR = path.join(PROJECT_ROOT, 'generated-images');
+const UPLOADS_DIR = path.join(PROJECT_ROOT, 'uploads');
+const PUBLIC_DIR = fs.existsSync(path.join(PROJECT_ROOT, 'src', 'public'))
+    ? path.join(PROJECT_ROOT, 'src', 'public')
+    : path.join(PROJECT_ROOT, 'public');
+
+[WORKFLOW_DATA_DIR, GENERATED_IMAGES_DIR, UPLOADS_DIR].forEach(dir => {
+    if (!fs.existsSync(dir)) {
+        fs.mkdirSync(dir, { recursive: true });
+    }
+});
+
 const workflowEngine = new WorkflowEngine(client, {
     enablePersistence: true,
-    persistenceDir: path.join(__dirname, 'workflow-data'),
+    persistenceDir: WORKFLOW_DATA_DIR,
     onStepStart: (execution, step) => {
         console.log(`[Workflow ${execution.id}] Step ${step.id} started`);
     },
@@ -104,7 +120,7 @@ if (process.env.PG_HOST) {
 }
 
 // Initialize Image Generation Service
-const imageService = new ImageGenerationService(config, path.join(__dirname, 'generated-images'));
+const imageService = new ImageGenerationService(config, GENERATED_IMAGES_DIR);
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -143,13 +159,10 @@ eventBus.on('workflow_trigger', async ({ workflowId, event }) => {
 
 app.use(cors());
 app.use(express.json());
-app.use(express.static(path.join(__dirname, 'public')));
-app.use('/generated-images', express.static(path.join(__dirname, 'generated-images')));
+app.use(express.static(PUBLIC_DIR));
+app.use('/generated-images', express.static(GENERATED_IMAGES_DIR));
 
-const uploadDir = path.join(__dirname, 'uploads');
-if (!fs.existsSync(uploadDir)) {
-    fs.mkdirSync(uploadDir, { recursive: true });
-}
+const uploadDir = UPLOADS_DIR;
 
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
@@ -1034,5 +1047,5 @@ app.post('/api/image/refine-prompt', async (req, res) => {
 // Start server
 app.listen(PORT, () => {
     console.log(`NVIDIA Bot Web Server running at http://localhost:${PORT}`);
-    console.log(`Serving frontend from ${path.resolve(__dirname, 'public')}`);
+    console.log(`Serving frontend from ${PUBLIC_DIR}`);
 });
