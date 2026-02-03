@@ -17,16 +17,15 @@ export function loadConfig(): Config {
     const chatHistoryLimit = parseInt(process.env.CHAT_HISTORY_LIMIT || '50', 10);
 
     if (!apiKey) {
-        console.error('Error: NVIDIA_API_KEY is not set in environment variables or .env file');
-        console.error('Please set it by:');
-        console.error('  1. Copy .env.example to .env');
-        console.error('  2. Add your NVIDIA API key to .env');
-        console.error('  3. Or set it as an environment variable');
-        process.exit(1);
+        if (process.env.NODE_ENV === 'production' && !process.env.NEXT_PHASE) {
+            console.error('Error: NVIDIA_API_KEY is not set in environment variables or .env file');
+            process.exit(1);
+        }
+        console.warn('Warning: NVIDIA_API_KEY is missing. This is fine during build, but required at runtime.');
     }
 
     return {
-        apiKey,
+        apiKey: apiKey || '',
         baseUrl,
         defaultModel,
         chatHistoryLimit,

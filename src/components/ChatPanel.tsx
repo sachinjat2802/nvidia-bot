@@ -275,7 +275,7 @@ export const ChatPanel: React.FC = () => {
                     <History size={20} />
                 </button>
 
-                <div className="flex-1 overflow-y-auto pt-24 pb-32 space-y-10 custom-scrollbar px-4 md:px-0 max-w-4xl mx-auto w-full">
+                <div className="flex-1 overflow-y-auto pt-20 md:pt-24 pb-32 space-y-10 custom-scrollbar px-4 md:px-0 max-w-4xl mx-auto w-full">
                     {messages.length === 0 && (
                         <div className="h-full flex flex-col items-center justify-center text-center py-20">
                             <motion.div
@@ -294,15 +294,15 @@ export const ChatPanel: React.FC = () => {
                             key={msg.id}
                             initial={{ opacity: 0, y: 15 }}
                             animate={{ opacity: 1, y: 0 }}
-                            className={`flex gap-5 ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}
+                            className={`flex gap-3 md:gap-5 ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}
                         >
-                            <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 border transition-all duration-300 ${msg.role === 'user'
+                            <div className={`w-8 h-8 md:w-9 md:h-9 rounded-lg md:rounded-xl flex items-center justify-center shrink-0 border transition-all duration-300 ${msg.role === 'user'
                                 ? 'bg-[#1a1b26] border-white/10'
                                 : 'bg-gradient-to-br from-primary to-[#004e92] border-primary/20 text-background shadow-[0_0_15px_rgba(0,229,255,0.3)]'
                                 }`}>
-                                {msg.role === 'user' ? <User size={18} /> : <Bot size={18} />}
+                                {msg.role === 'user' ? <User size={18} className="w-4 h-4 md:w-[18px] md:h-[18px]" /> : <Bot size={18} className="w-4 h-4 md:w-[18px] md:h-[18px]" />}
                             </div>
-                            <div className={`max-w-[85%] rounded-2xl px-6 py-4 leading-relaxed text-[1rem] shadow-sm ${msg.role === 'user'
+                            <div className={`max-w-[90%] md:max-w-[85%] rounded-2xl px-4 md:px-6 py-3 md:py-4 leading-relaxed text-[0.95rem] md:text-[1rem] shadow-sm ${msg.role === 'user'
                                 ? 'bg-surface border border-white/5 text-text-primary rounded-tr-none'
                                 : 'bg-transparent text-text-primary rounded-tl-none'
                                 }`}>
@@ -325,7 +325,47 @@ export const ChatPanel: React.FC = () => {
                     <div className="max-w-3xl mx-auto relative group pointer-events-auto">
                         <div className="absolute -inset-1 bg-gradient-to-r from-primary/30 to-[#004e92]/30 rounded-3xl blur-xl opacity-0 group-focus-within:opacity-100 transition-opacity duration-500" />
 
-                        <div className="relative glass rounded-2xl md:rounded-3xl p-3 md:p-4 flex flex-col gap-3 shadow-2xl border-white/10 hover:border-white/20 transition-all">
+                        <div className="relative glass rounded-2xl md:rounded-3xl p-3 md:p-4 flex flex-col gap-1 shadow-2xl border-white/10 hover:border-white/20 transition-all">
+                            {/* Mobile Selectors (Top) */}
+                            <div className="flex md:hidden items-center gap-2 overflow-x-auto hide-scrollbar pb-2 min-h-[40px] border-b border-white/5 mb-2">
+                                <div className="relative flex items-center shrink-0">
+                                    <select
+                                        value={currentModel}
+                                        onChange={(e) => setCurrentModel(e.target.value)}
+                                        className="bg-white/5 text-[10px] uppercase tracking-wider font-heading text-text-muted px-2 py-1.5 rounded-lg border border-white/5 outline-none appearance-none cursor-pointer"
+                                    >
+                                        {models.map(m => (
+                                            <option key={m.id} value={m.id} className="bg-[#1a1b26] text-text-primary lowercase font-sans">{m.displayName}</option>
+                                        ))}
+                                    </select>
+                                    <ChevronDown size={10} className="absolute right-1 pointer-events-none text-text-muted" />
+                                </div>
+                                <div className="relative flex items-center shrink-0">
+                                    <select
+                                        value={currentLanguage}
+                                        onChange={(e) => setCurrentLanguage(e.target.value)}
+                                        className="bg-white/5 text-[10px] uppercase tracking-wider font-heading text-text-muted px-2 py-1.5 rounded-lg border border-white/5 outline-none appearance-none cursor-pointer"
+                                    >
+                                        {languages.map(lang => (
+                                            <option key={lang} value={lang} className="bg-[#1a1b26] text-text-primary lowercase font-sans">{lang}</option>
+                                        ))}
+                                    </select>
+                                    <ChevronDown size={10} className="absolute right-1 pointer-events-none text-text-muted" />
+                                </div>
+                                <div className="relative flex items-center shrink-0">
+                                    <select
+                                        value={currentAge}
+                                        onChange={(e) => setCurrentAge(e.target.value)}
+                                        className="bg-white/5 text-[10px] uppercase tracking-wider font-heading text-text-muted px-2 py-1.5 rounded-lg border border-white/5 outline-none appearance-none cursor-pointer"
+                                    >
+                                        {ages.map(age => (
+                                            <option key={age} value={age} className="bg-[#1a1b26] text-text-primary lowercase font-sans">Age: {age}</option>
+                                        ))}
+                                    </select>
+                                    <ChevronDown size={10} className="absolute right-1 pointer-events-none text-text-muted" />
+                                </div>
+                            </div>
+
                             <textarea
                                 value={input}
                                 onChange={(e) => setInput(e.target.value)}
@@ -337,16 +377,17 @@ export const ChatPanel: React.FC = () => {
                                 }}
                                 placeholder="Ask Moonu Bot anything..."
                                 rows={1}
-                                className="bg-transparent border-none outline-none px-4 py-2 text-text-primary resize-none placeholder:text-text-muted text-lg focus:ring-0"
+                                className="bg-transparent border-none outline-none px-4 py-2 text-text-primary resize-none placeholder:text-text-muted text-lg focus:ring-0 min-h-[50px]"
                             />
 
-                            <div className="flex items-center justify-between px-3 pb-1 pt-2 border-t border-white/5">
-                                <div className="flex items-center gap-3">
-                                    <button className="p-2 text-text-muted hover:text-text-primary hover:bg-white/5 rounded-xl transition-all">
-                                        <Paperclip size={20} />
+                            <div className="flex items-center justify-between px-2 md:px-3 pb-1 pt-2 border-t border-white/5">
+                                {/* Desktop Selectors (Bottom Row) */}
+                                <div className="hidden md:flex items-center gap-3 flex-1 overflow-x-auto hide-scrollbar pb-0">
+                                    <button className="p-2 text-text-muted hover:text-text-primary hover:bg-white/5 rounded-xl transition-all shrink-0">
+                                        <Paperclip size={18} />
                                     </button>
 
-                                    <div className="relative flex items-center group/select">
+                                    <div className="relative flex items-center group/select shrink-0">
                                         <select
                                             value={currentModel}
                                             onChange={(e) => setCurrentModel(e.target.value)}
@@ -361,7 +402,7 @@ export const ChatPanel: React.FC = () => {
                                         <ChevronDown size={12} className="absolute right-2 pointer-events-none text-text-muted" />
                                     </div>
 
-                                    <div className="relative flex items-center group/select">
+                                    <div className="relative flex items-center group/select shrink-0">
                                         <select
                                             value={currentLanguage}
                                             onChange={(e) => setCurrentLanguage(e.target.value)}
@@ -376,7 +417,7 @@ export const ChatPanel: React.FC = () => {
                                         <ChevronDown size={12} className="absolute right-2 pointer-events-none text-text-muted" />
                                     </div>
 
-                                    <div className="relative flex items-center group/select">
+                                    <div className="relative flex items-center group/select shrink-0">
                                         <select
                                             value={currentAge}
                                             onChange={(e) => setCurrentAge(e.target.value)}
@@ -392,17 +433,24 @@ export const ChatPanel: React.FC = () => {
                                     </div>
                                 </div>
 
+                                {/* Mobile Only Paperclip */}
+                                <div className="md:hidden flex items-center">
+                                    <button className="p-2 text-text-muted hover:text-text-primary hover:bg-white/5 rounded-xl transition-all">
+                                        <Paperclip size={18} />
+                                    </button>
+                                </div>
+
                                 <motion.button
                                     whileHover={{ scale: 1.05 }}
                                     whileTap={{ scale: 0.95 }}
                                     onClick={handleSend}
                                     disabled={!input.trim() || isLoading}
-                                    className={`p-2.5 rounded-xl transition-all flex items-center justify-center ${input.trim() && !isLoading
+                                    className={`p-2 md:p-2.5 rounded-xl transition-all flex items-center justify-center shrink-0 ml-2 ${input.trim() && !isLoading
                                         ? 'bg-primary text-background shadow-glow'
                                         : 'bg-white/5 text-text-muted opacity-40'
                                         }`}
                                 >
-                                    <Send size={20} className={isLoading ? 'animate-pulse' : ''} />
+                                    <Send size={20} className={`w-4 h-4 md:w-5 md:h-5 ${isLoading ? 'animate-pulse' : ''}`} />
                                 </motion.button>
                             </div>
                         </div>
