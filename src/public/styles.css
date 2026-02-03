@@ -635,8 +635,181 @@ body {
     cursor: pointer;
 }
 
-#clear-image-btn:hover {
-    background: var(--accent-red);
+/* Responsive Design */
+.mobile-only {
+    display: none;
+}
+
+@media (max-width: 1024px) {
+    .workflows-layout {
+        flex-direction: column;
+    }
+
+    .workflow-panel,
+    .executions-panel {
+        width: 100%;
+    }
+}
+
+@media (max-width: 768px) {
+    .header-content {
+        padding: 0 16px;
+    }
+
+    .logo h1 {
+        font-size: 1.2rem;
+    }
+
+    .model-selector label {
+        display: none;
+    }
+
+    .select-input,
+    .model-selector select {
+        min-width: 150px;
+        font-size: 0.75rem;
+    }
+
+    .mobile-only {
+        display: flex;
+    }
+
+    .tabs {
+        padding: 0 8px;
+        overflow-x: auto;
+        white-space: nowrap;
+        scrollbar-width: none;
+    }
+
+    .tabs::-webkit-scrollbar {
+        display: none;
+    }
+
+    .tab {
+        padding: 12px 16px;
+        font-size: 0.8rem;
+    }
+
+    .chat-sidebar {
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        z-index: 1000;
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+        box-shadow: 20px 0 50px rgba(0, 0, 0, 0.5);
+    }
+
+    .chat-sidebar.active {
+        transform: translateX(0);
+    }
+
+    #chat-panel {
+        position: relative;
+    }
+
+    .messages-container {
+        padding: 0 16px;
+        gap: 20px;
+    }
+
+    .message.user .message-content {
+        max-width: 90%;
+        padding: 12px 16px;
+    }
+
+    .message.assistant {
+        gap: 12px;
+    }
+
+    .model-icon {
+        width: 28px;
+        height: 28px;
+    }
+
+    .input-wrapper {
+        padding: 12px 16px;
+    }
+
+    .input-container {
+        padding: 10px 14px;
+        gap: 10px;
+    }
+
+    #message-input {
+        font-size: 0.9rem;
+    }
+
+    .action-btn,
+    .send-btn {
+        width: 36px;
+        height: 36px;
+    }
+
+    /* Panels adjustments */
+    #workflows-panel,
+    #rag-panel,
+    #image-panel {
+        padding: 16px;
+    }
+
+    .panel-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .panel-actions {
+        width: 100%;
+        justify-content: flex-start;
+        overflow-x: auto;
+        padding-bottom: 4px;
+    }
+
+    /* RAG & Image Interface adjustments */
+    .rag-interface,
+    .image-interface {
+        flex-direction: column;
+        gap: 24px;
+    }
+
+    .rag-sidebar,
+    .image-prompt-panel {
+        width: 100%;
+        padding-right: 0;
+        border-right: none;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        padding-bottom: 24px;
+    }
+
+    .image-prompt-panel {
+        border-bottom: none;
+    }
+
+    .image-settings {
+        grid-template-columns: 1fr;
+    }
+
+    .image-gallery {
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    }
+}
+
+@media (max-width: 480px) {
+    .logo svg {
+        width: 24px;
+        height: 24px;
+    }
+
+    .logo h1 {
+        display: none;
+    }
+
+    .select-input,
+    .model-selector select {
+        min-width: 120px;
+    }
 }
 
 /* File Preview */

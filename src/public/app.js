@@ -26,6 +26,8 @@ const refreshExecutionsBtn = document.getElementById('refresh-executions-btn');
 const executionModal = document.getElementById('execution-modal');
 const closeModalBtn = document.getElementById('close-modal-btn');
 const modalBody = document.getElementById('modal-body');
+const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
+const sidebar = document.querySelector('.chat-sidebar');
 
 // State
 let currentModel = '';
@@ -710,6 +712,20 @@ executionModal.querySelector('.modal-overlay').addEventListener('click', () => {
     executionModal.classList.remove('active');
     selectedExecutionId = null;
     stopPollingExecution(selectedExecutionId);
+});
+
+// Mobile menu toggle
+if (mobileMenuToggle) {
+    mobileMenuToggle.addEventListener('click', () => {
+        sidebar.classList.toggle('active');
+    });
+}
+
+// Close sidebar on history item click (mobile)
+historyList.addEventListener('click', (e) => {
+    if (window.innerWidth <= 768 && e.target.closest('.history-item')) {
+        sidebar.classList.remove('active');
+    }
 });
 
 // Initialize
