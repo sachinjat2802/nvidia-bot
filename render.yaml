@@ -1,11 +1,9 @@
 services:
   - type: web
     name: moonu-bot
-    runtime: node
+    runtime: docker # Changed to docker to match your Render logs
     plan: free
     region: singapore
-    buildCommand: npm install && npm run build
-    startCommand: npm run start
     envVars:
       - key: NVIDIA_API_KEY
         sync: false
@@ -15,7 +13,7 @@ services:
         value: meta/llama-3.1-70b-instruct
       - key: CHAT_HISTORY_LIMIT
         value: 50
-      - key: NODE_VERSION
-        value: 20.11.0
+      - key: PORT
+        value: 10000
     healthCheckPath: /
     autoDeploy: true

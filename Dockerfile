@@ -6,7 +6,7 @@ WORKDIR /app
 # Copy root dependency manifests
 COPY package*.json ./
 
-# Install all dependencies (including devDependencies for build)
+# Install all dependencies
 RUN npm install
 
 # Copy the entire project
@@ -27,8 +27,11 @@ ENV PORT=10000
 COPY --from=builder /app/package*.json ./
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/.next ./.next
-COPY --from=builder /app/public ./public
+# Only copy src if your app uses it at runtime (e.g., custom server or dynamic imports)
 COPY --from=builder /app/src ./src
+
+# Create an empty public directory if it doesn't exist to satisfy any potential references
+RUN mkdir -p public
 
 # Expose the application port
 EXPOSE 10000
