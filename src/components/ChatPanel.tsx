@@ -55,27 +55,40 @@ export const ChatPanel: React.FC = () => {
         fetchSessions();
     }, []);
 
-    const fetchSessions = async () => {
+    const STORAGE_KEY = 'moonu_bot_history';
+
+    const fetchSessions = () => {
         try {
-            const res = await fetch('/api/history');
-            const data = await res.json();
-            setSessions(data);
+            const data = localStorage.getItem(STORAGE_KEY);
+            if (data) {
+                const parsed = JSON.parse(data);
+                // Sort by updatedAt descending
+                const sessionList = Object.values(parsed).map((s: any) => ({
+                    id: s.id,
+                    title: s.title,
+                    updatedAt: s.updatedAt
+                })).sort((a: any, b: any) => b.updatedAt - a.updatedAt);
+                setSessions(sessionList as ChatSession[]);
+            }
         } catch (err) {
-            console.error('Failed to fetch sessions', err);
+            console.error('Failed to fetch sessions from local storage', err);
         }
     };
 
-    const loadSession = async (id: string) => {
+    const loadSession = (id: string) => {
         setIsLoading(true);
         try {
-            const res = await fetch(`/api/history/${id}`);
-            const data = await res.json();
-            if (data.messages) {
-                setMessages(data.messages);
-                setCurrentSessionId(id);
+            const data = localStorage.getItem(STORAGE_KEY);
+            if (data) {
+                const parsed = JSON.parse(data);
+                const session = parsed[id];
+                if (session && session.messages) {
+                    setMessages(session.messages);
+                    setCurrentSessionId(id);
+                }
             }
         } catch (err) {
-            console.error('Failed to load session', err);
+            console.error('Failed to load session from local storage', err);
         } finally {
             setIsLoading(false);
             setIsHistoryOpen(false);
@@ -88,16 +101,21 @@ export const ChatPanel: React.FC = () => {
         setIsHistoryOpen(false);
     };
 
-    const deleteSession = async (e: React.MouseEvent, id: string) => {
+    const deleteSession = (e: React.MouseEvent, id: string) => {
         e.stopPropagation();
         try {
-            await fetch(`/api/history/${id}`, { method: 'DELETE' });
-            setSessions(prev => prev.filter(s => s.id !== id));
-            if (currentSessionId === id) {
-                startNewChat();
+            const data = localStorage.getItem(STORAGE_KEY);
+            if (data) {
+                const parsed = JSON.parse(data);
+                delete parsed[id];
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(parsed));
+                setSessions(prev => prev.filter(s => s.id !== id));
+                if (currentSessionId === id) {
+                    startNewChat();
+                }
             }
         } catch (err) {
-            console.error('Failed to delete session', err);
+            console.error('Failed to delete session from local storage', err);
         }
     };
 
@@ -124,22 +142,30 @@ export const ChatPanel: React.FC = () => {
         setIsLoading(true);
 
         try {
-            // If it's a new chat, create a session first
+            // Handle session creation/update in local storage
             let sessionId = currentSessionId;
+            const storageData = localStorage.getItem(STORAGE_KEY);
+            const allSessions = storageData ? JSON.parse(storageData) : {};
+
             if (!sessionId) {
-                const res = await fetch('/api/history', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        title: input.slice(0, 30) + (input.length > 30 ? '...' : ''),
-                        messages: [userMessage]
-                    })
-                });
-                const session = await res.json();
-                sessionId = session.id;
+                // New session
+                sessionId = Date.now().toString();
+                allSessions[sessionId] = {
+                    id: sessionId,
+                    title: input.slice(0, 30) + (input.length > 30 ? '...' : ''),
+                    updatedAt: Date.now(),
+                    messages: [userMessage]
+                };
                 setCurrentSessionId(sessionId);
-                fetchSessions(); // Refresh list
+            } else {
+                // Update existing session
+                if (allSessions[sessionId]) {
+                    allSessions[sessionId].messages = newMessages;
+                    allSessions[sessionId].updatedAt = Date.now();
+                }
             }
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(allSessions));
+            fetchSessions();
 
             const response = await fetch('/api/chat', {
                 method: 'POST',
@@ -192,14 +218,17 @@ export const ChatPanel: React.FC = () => {
                 }
             }
 
-            // Save the complete conversation
+            // Save the complete conversation to local storage
             const finalAssistantMessage: Message = { id: assistantId, role: 'assistant', content: assistantContent };
             if (sessionId) {
-                await fetch(`/api/history/${sessionId}`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ messages: [...newMessages, finalAssistantMessage] })
-                });
+                const refreshedData = localStorage.getItem(STORAGE_KEY);
+                const currentAllSessions = refreshedData ? JSON.parse(refreshedData) : {};
+                if (currentAllSessions[sessionId]) {
+                    currentAllSessions[sessionId].messages = [...newMessages, finalAssistantMessage];
+                    currentAllSessions[sessionId].updatedAt = Date.now();
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify(currentAllSessions));
+                    fetchSessions();
+                }
             }
 
         } catch (error) {
