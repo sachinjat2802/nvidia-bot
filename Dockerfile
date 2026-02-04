@@ -30,8 +30,8 @@ COPY --from=builder /app/.next ./.next
 # Only copy src if your app uses it at runtime (e.g., custom server or dynamic imports)
 COPY --from=builder /app/src ./src
 
-# Create an empty public directory if it doesn't exist to satisfy any potential references
-RUN mkdir -p public
+# Copy the public directory for static assets like logos
+COPY --from=builder /app/public ./public
 
 # Expose the application port
 EXPOSE 10000
