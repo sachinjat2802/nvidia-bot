@@ -304,7 +304,7 @@ export const ChatPanel: React.FC = () => {
                     <History size={20} />
                 </button>
 
-                <div className="flex-1 overflow-y-auto pt-20 md:pt-24 pb-32 space-y-10 custom-scrollbar px-4 md:px-0 max-w-4xl mx-auto w-full">
+                <div className="flex-1 overflow-y-auto pt-20 md:pt-24 pb-32 space-y-10 custom-scrollbar px-4 md:px-8 lg:px-16 max-w-5xl mx-auto w-full">
                     {messages.length === 0 && (
                         <div className="h-full flex flex-col items-center justify-center text-center py-20">
                             <motion.div
@@ -366,8 +366,8 @@ export const ChatPanel: React.FC = () => {
                 </div>
 
                 {/* Input Area */}
-                <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-background via-background/95 to-transparent pointer-events-none">
-                    <div className="max-w-3xl mx-auto relative group pointer-events-auto">
+                <div className="absolute bottom-0 left-0 right-0 p-4 md:p-6 bg-gradient-to-t from-background via-background/95 to-transparent pointer-events-none">
+                    <div className="max-w-4xl mx-auto relative group pointer-events-auto">
                         <div className="absolute -inset-1 bg-gradient-to-r from-primary/30 to-primary-hover/30 rounded-3xl blur-xl opacity-0 group-focus-within:opacity-100 transition-opacity duration-500" />
 
                         <div className="relative glass rounded-2xl md:rounded-3xl p-3 md:p-4 flex flex-col gap-1 shadow-2xl border-border hover:border-primary/30 transition-all">

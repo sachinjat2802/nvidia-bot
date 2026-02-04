@@ -392,14 +392,14 @@ export const RAGPanel: React.FC = () => {
     return (
         <div className="h-full flex flex-col md:flex-row overflow-hidden bg-background">
             {/* Configuration Panel */}
-            <div className="w-full md:w-1/2 p-6 md:p-10 border-r border-border overflow-y-auto custom-scrollbar">
-                <div className="mb-8">
-                    <h2 className="text-3xl font-heading font-bold text-text-primary mb-2 flex items-center gap-3">
-                        <Database className="text-primary" />
+            <div className="w-full md:w-1/2 p-4 md:p-10 border-r border-border overflow-y-auto custom-scrollbar">
+                <div className="mb-6 md:mb-8">
+                    <h2 className="text-xl md:text-3xl font-heading font-bold text-text-primary mb-2 flex items-center gap-2 md:gap-3">
+                        <Database className="text-primary" size={24} />
                         Embed Manager
                     </h2>
-                    <p className="text-text-secondary text-sm leading-relaxed">
-                        Configure your embedded chatbot. Connect a data source to train the bot. You can connect multiple sources.
+                    <p className="text-text-secondary text-xs md:text-sm leading-relaxed">
+                        Configure your embedded chatbot. Connect a data source to train the bot.
                     </p>
                 </div>
 
@@ -410,7 +410,7 @@ export const RAGPanel: React.FC = () => {
                     </h3>
 
                     {/* Source Type Selector */}
-                    <div className="grid grid-cols-6 gap-2 mb-6">
+                    <div className="grid grid-cols-3 md:grid-cols-6 gap-2 mb-4 md:mb-6">
                         <button onClick={() => setSourceType('web')} className={`flex flex-col items-center justify-center p-3 rounded-xl border transition-all ${sourceType === 'web' ? 'bg-primary/20 border-primary text-primary' : 'bg-surface border-border text-text-muted hover:bg-surface-hover'}`}>
                             <Globe size={20} className="mb-1" />
                             <span className="text-[10px] font-bold uppercase">Web</span>
@@ -554,8 +554,8 @@ export const RAGPanel: React.FC = () => {
                 </section>
             </div>
 
-            {/* Preview Panel */}
-            <div className="w-full md:w-1/2 bg-surface/50 p-6 md:p-10 flex flex-col h-full">
+            {/* Preview Panel - Hidden on mobile */}
+            <div className="hidden md:flex w-full md:w-1/2 bg-surface/50 p-6 md:p-10 flex-col h-full">
                 <h3 className="text-xs font-heading font-bold uppercase tracking-widest text-primary mb-6 flex items-center gap-2">
                     <Play size={14} /> Live Preview
                 </h3>

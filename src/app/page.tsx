@@ -35,9 +35,9 @@ export default function Home() {
     return (
         <div className="flex flex-col h-screen bg-background text-text-primary overflow-hidden font-sans transition-colors duration-300">
             {/* Header */}
-            <header className="h-[70px] border-b border-border flex items-center justify-between px-8 bg-background/80 backdrop-blur-xl z-50">
-                <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 flex items-center justify-center group overflow-hidden relative">
+            <header className="h-[56px] md:h-[70px] border-b border-border flex items-center justify-between px-4 md:px-8 bg-background/80 backdrop-blur-xl z-50">
+                <div className="flex items-center gap-2 md:gap-4">
+                    <div className="w-8 h-8 md:w-10 md:h-10 flex items-center justify-center group overflow-hidden relative">
                         <img
                             src="/logo-m.png"
                             alt="Moonu Bot Logo"
@@ -46,7 +46,7 @@ export default function Home() {
                         />
                     </div>
                     <div>
-                        <h1 className="font-heading font-black text-2xl tracking-[0.1em] text-text-primary glow-text uppercase leading-none">
+                        <h1 className="font-heading font-black text-lg md:text-2xl tracking-[0.05em] md:tracking-[0.1em] text-text-primary glow-text uppercase leading-none">
                             Moonu Bot
                         </h1>
                     </div>
@@ -70,22 +70,22 @@ export default function Home() {
             </header>
 
             {/* Tabs Navigation */}
-            <nav className="flex px-10 border-b border-border bg-background z-40">
+            <nav className="flex justify-center md:justify-start px-2 md:px-10 border-b border-border bg-background z-40 overflow-x-auto no-scrollbar">
                 {tabs.map((tab) => (
                     <button
                         key={tab.id}
                         onClick={() => setActiveTab(tab.id as TabId)}
-                        className={`flex items-center gap-3 px-8 py-5 font-heading text-[11px] font-bold tracking-[0.2em] transition-all relative group ${activeTab === tab.id ? 'text-primary' : 'text-text-muted hover:text-text-primary'
+                        className={`flex items-center gap-1.5 md:gap-3 px-3 md:px-8 py-3 md:py-5 font-heading text-[10px] md:text-[11px] font-bold tracking-[0.1em] md:tracking-[0.2em] transition-all relative group whitespace-nowrap ${activeTab === tab.id ? 'text-primary' : 'text-text-muted hover:text-text-primary'
                             }`}
                     >
                         <span className={`transition-transform duration-300 ${activeTab === tab.id ? 'scale-110 drop-shadow-[0_0_8px_var(--primary)] text-primary' : 'group-hover:scale-110'}`}>
                             {tab.icon}
                         </span>
-                        <span className="hidden sm:inline uppercase">{tab.label}</span>
+                        <span className="uppercase">{tab.label}</span>
                         {activeTab === tab.id && (
                             <motion.div
                                 layoutId="activeTabUnderline"
-                                className="absolute bottom-0 left-4 right-4 h-[2px] bg-primary shadow-[0_0_15px_rgba(0,229,255,0.8)]"
+                                className="absolute bottom-0 left-2 right-2 md:left-4 md:right-4 h-[2px] bg-primary shadow-[0_0_15px_rgba(0,229,255,0.8)]"
                             />
                         )}
                     </button>
