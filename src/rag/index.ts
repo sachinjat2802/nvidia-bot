@@ -1,5 +1,5 @@
 ﻿export * from './types';
-export * from './vector-store';
+// export * from './vector-store'; // Conflict with simple-store
 export * from './rag-manager';
 export * from './connectors/file-system';
 export * from './connectors/sql';
