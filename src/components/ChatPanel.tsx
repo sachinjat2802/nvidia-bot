@@ -34,7 +34,7 @@ export const ChatPanel: React.FC = () => {
     ];
 
     const ages = [
-        '5', '10', '15', '20', '25', '30', '35', '40', '50', '60', '70', '80'
+        '0-5', '6-10', '11-15', '16-20', '21-25', '26-30', '31-35', '36-40', '41-50', '51-60', '61-70', '71+'
     ];
 
     const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -259,7 +259,7 @@ export const ChatPanel: React.FC = () => {
                         >
                             <div className="flex items-center justify-between mb-8">
                                 <h3 className="font-heading text-xs uppercase tracking-[0.2em] font-bold text-primary">Chat History</h3>
-                                <button onClick={startNewChat} className="p-2 hover:bg-white/5 rounded-lg text-primary" title="New Chat">
+                                <button onClick={startNewChat} className="p-2 hover:bg-surface-hover rounded-lg text-primary" title="New Chat">
                                     <Plus size={20} />
                                 </button>
                             </div>
@@ -272,7 +272,7 @@ export const ChatPanel: React.FC = () => {
                                         <div
                                             key={s.id}
                                             onClick={() => loadSession(s.id)}
-                                            className={`group flex items-center justify-between p-3 rounded-xl cursor-pointer transition-all border ${currentSessionId === s.id ? 'bg-primary/10 border-primary/30 text-primary' : 'hover:bg-white/5 border-transparent text-text-secondary'
+                                            className={`group flex items-center justify-between p-3 rounded-xl cursor-pointer transition-all border ${currentSessionId === s.id ? 'bg-primary/10 border-primary/30 text-primary' : 'hover:bg-surface-hover border-transparent text-text-secondary'
                                                 }`}
                                         >
                                             <div className="flex items-center gap-3 overflow-hidden">
@@ -299,7 +299,7 @@ export const ChatPanel: React.FC = () => {
                 {/* Float History Toggle */}
                 <button
                     onClick={() => setIsHistoryOpen(true)}
-                    className="absolute left-6 top-6 p-3 bg-surface/50 backdrop-blur-md border border-white/10 rounded-xl text-text-muted hover:text-primary transition-all z-30"
+                    className="absolute left-6 top-6 p-3 bg-surface border border-border rounded-xl text-text-muted hover:text-primary transition-all z-30 shadow-xl"
                 >
                     <History size={20} />
                 </button>
@@ -314,7 +314,7 @@ export const ChatPanel: React.FC = () => {
                             >
                                 <Sparkles className="mb-8 text-primary opacity-60" size={64} />
                             </motion.div>
-                            <h2 className="text-3xl font-heading mb-4 text-[#f0f0f3] tracking-tight">How can I help you today?</h2>
+                            <h2 className="text-3xl font-heading mb-4 text-text-primary tracking-tight">How can I help you today?</h2>
                         </div>
                     )}
 
@@ -326,18 +326,19 @@ export const ChatPanel: React.FC = () => {
                             className={`flex gap-3 md:gap-5 ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}
                         >
                             <div className={`w-8 h-8 md:w-9 md:h-9 rounded-lg md:rounded-xl flex items-center justify-center shrink-0 border transition-all duration-300 ${msg.role === 'user'
-                                ? 'bg-[#1a1b26] border-white/10'
-                                : 'bg-gradient-to-br from-primary to-[#004e92] border-primary/20 text-background shadow-[0_0_15px_rgba(0,229,255,0.3)]'
+                                ? 'bg-surface border-border'
+                                : 'bg-gradient-to-br from-primary to-primary-hover border-primary/20 text-background shadow-glow'
                                 }`}>
                                 {msg.role === 'user' ? <User size={18} className="w-4 h-4 md:w-[18px] md:h-[18px]" /> : <Bot size={18} className="w-4 h-4 md:w-[18px] md:h-[18px]" />}
                             </div>
                             <div className={`max-w-[90%] md:max-w-[85%] rounded-2xl px-4 md:px-6 py-3 md:py-4 leading-relaxed text-[0.95rem] md:text-[1rem] shadow-sm ${msg.role === 'user'
-                                ? 'bg-surface border border-white/5 text-text-primary rounded-tr-none'
+                                ? 'bg-surface border border-border text-text-primary rounded-tr-none'
                                 : 'bg-transparent text-text-primary rounded-tl-none'
                                 }`}>
                                 {msg.role === 'assistant' ? (
                                     <div
-                                        className="prose prose-invert max-w-none prose-p:leading-relaxed prose-pre:bg-black/40 prose-pre:border prose-pre:border-white/10 prose-code:text-primary"
+                                        className={`prose max-w-none prose-p:leading-relaxed prose-pre:bg-background/50 prose-pre:border prose-pre:border-border prose-code:text-primary ${typeof document !== 'undefined' && document.documentElement.getAttribute('data-theme') === 'light' ? '' : 'prose-invert'
+                                            }`}
                                         dangerouslySetInnerHTML={{ __html: marked.parse(msg.content) as string }}
                                     />
                                 ) : (
@@ -352,19 +353,19 @@ export const ChatPanel: React.FC = () => {
                 {/* Input Area */}
                 <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-background via-background/95 to-transparent pointer-events-none">
                     <div className="max-w-3xl mx-auto relative group pointer-events-auto">
-                        <div className="absolute -inset-1 bg-gradient-to-r from-primary/30 to-[#004e92]/30 rounded-3xl blur-xl opacity-0 group-focus-within:opacity-100 transition-opacity duration-500" />
+                        <div className="absolute -inset-1 bg-gradient-to-r from-primary/30 to-primary-hover/30 rounded-3xl blur-xl opacity-0 group-focus-within:opacity-100 transition-opacity duration-500" />
 
-                        <div className="relative glass rounded-2xl md:rounded-3xl p-3 md:p-4 flex flex-col gap-1 shadow-2xl border-white/10 hover:border-white/20 transition-all">
+                        <div className="relative glass rounded-2xl md:rounded-3xl p-3 md:p-4 flex flex-col gap-1 shadow-2xl border-border hover:border-primary/30 transition-all">
                             {/* Mobile Selectors (Top) */}
                             <div className="flex md:hidden items-center gap-2 overflow-x-auto hide-scrollbar pb-2 min-h-[40px] border-b border-white/5 mb-2">
                                 <div className="relative flex items-center shrink-0">
                                     <select
                                         value={currentModel}
                                         onChange={(e) => setCurrentModel(e.target.value)}
-                                        className="bg-white/5 text-[10px] uppercase tracking-wider font-heading text-text-muted px-2 py-1.5 rounded-lg border border-white/5 outline-none appearance-none cursor-pointer"
+                                        className="bg-surface-hover text-[10px] uppercase tracking-wider font-heading text-text-muted px-2 py-1.5 rounded-lg border border-border outline-none appearance-none cursor-pointer"
                                     >
                                         {models.map(m => (
-                                            <option key={m.id} value={m.id} className="bg-[#1a1b26] text-text-primary lowercase font-sans">{m.displayName}</option>
+                                            <option key={m.id} value={m.id} className="bg-surface text-text-primary lowercase font-sans">{m.displayName}</option>
                                         ))}
                                     </select>
                                     <ChevronDown size={10} className="absolute right-1 pointer-events-none text-text-muted" />
@@ -373,10 +374,10 @@ export const ChatPanel: React.FC = () => {
                                     <select
                                         value={currentLanguage}
                                         onChange={(e) => setCurrentLanguage(e.target.value)}
-                                        className="bg-white/5 text-[10px] uppercase tracking-wider font-heading text-text-muted px-2 py-1.5 rounded-lg border border-white/5 outline-none appearance-none cursor-pointer"
+                                        className="bg-surface-hover text-[10px] uppercase tracking-wider font-heading text-text-muted px-2 py-1.5 rounded-lg border border-border outline-none appearance-none cursor-pointer"
                                     >
                                         {languages.map(lang => (
-                                            <option key={lang} value={lang} className="bg-[#1a1b26] text-text-primary lowercase font-sans">{lang}</option>
+                                            <option key={lang} value={lang} className="bg-surface text-text-primary lowercase font-sans">{lang}</option>
                                         ))}
                                     </select>
                                     <ChevronDown size={10} className="absolute right-1 pointer-events-none text-text-muted" />
@@ -385,10 +386,10 @@ export const ChatPanel: React.FC = () => {
                                     <select
                                         value={currentAge}
                                         onChange={(e) => setCurrentAge(e.target.value)}
-                                        className="bg-white/5 text-[10px] uppercase tracking-wider font-heading text-text-muted px-2 py-1.5 rounded-lg border border-white/5 outline-none appearance-none cursor-pointer"
+                                        className="bg-surface-hover text-[10px] uppercase tracking-wider font-heading text-text-muted px-2 py-1.5 rounded-lg border border-border outline-none appearance-none cursor-pointer"
                                     >
                                         {ages.map(age => (
-                                            <option key={age} value={age} className="bg-[#1a1b26] text-text-primary lowercase font-sans">Age: {age}</option>
+                                            <option key={age} value={age} className="bg-surface text-text-primary lowercase font-sans">Age: {age}</option>
                                         ))}
                                     </select>
                                     <ChevronDown size={10} className="absolute right-1 pointer-events-none text-text-muted" />
@@ -409,10 +410,10 @@ export const ChatPanel: React.FC = () => {
                                 className="bg-transparent border-none outline-none px-4 py-2 text-text-primary resize-none placeholder:text-text-muted text-lg focus:ring-0 min-h-[50px]"
                             />
 
-                            <div className="flex items-center justify-between px-2 md:px-3 pb-1 pt-2 border-t border-white/5">
+                            <div className="flex items-center justify-between px-2 md:px-3 pb-1 pt-2 border-t border-border">
                                 {/* Desktop Selectors (Bottom Row) */}
                                 <div className="hidden md:flex items-center gap-3 flex-1 overflow-x-auto hide-scrollbar pb-0">
-                                    <button className="p-2 text-text-muted hover:text-text-primary hover:bg-white/5 rounded-xl transition-all shrink-0">
+                                    <button className="p-2 text-text-muted hover:text-text-primary hover:bg-surface-hover rounded-xl transition-all shrink-0">
                                         <Paperclip size={18} />
                                     </button>
 
@@ -420,10 +421,10 @@ export const ChatPanel: React.FC = () => {
                                         <select
                                             value={currentModel}
                                             onChange={(e) => setCurrentModel(e.target.value)}
-                                            className="bg-white/5 hover:bg-white/10 text-[11px] uppercase tracking-widest font-heading text-text-muted hover:text-primary px-3 py-1.5 rounded-lg border border-white/5 outline-none appearance-none cursor-pointer transition-all pr-8"
+                                            className="bg-surface-hover hover:bg-surface text-[11px] uppercase tracking-widest font-heading text-text-muted hover:text-primary px-3 py-1.5 rounded-lg border border-border outline-none appearance-none cursor-pointer transition-all pr-8"
                                         >
                                             {models.map(m => (
-                                                <option key={m.id} value={m.id} className="bg-[#1a1b26] text-text-primary lowercase font-sans py-2">
+                                                <option key={m.id} value={m.id} className="bg-surface text-text-primary lowercase font-sans py-2">
                                                     {m.displayName}
                                                 </option>
                                             ))}
@@ -435,10 +436,10 @@ export const ChatPanel: React.FC = () => {
                                         <select
                                             value={currentLanguage}
                                             onChange={(e) => setCurrentLanguage(e.target.value)}
-                                            className="bg-white/5 hover:bg-white/10 text-[11px] uppercase tracking-widest font-heading text-text-muted hover:text-primary px-3 py-1.5 rounded-lg border border-white/5 outline-none appearance-none cursor-pointer transition-all pr-8"
+                                            className="bg-surface-hover hover:bg-surface text-[11px] uppercase tracking-widest font-heading text-text-muted hover:text-primary px-3 py-1.5 rounded-lg border border-border outline-none appearance-none cursor-pointer transition-all pr-8"
                                         >
                                             {languages.map(lang => (
-                                                <option key={lang} value={lang} className="bg-[#1a1b26] text-text-primary lowercase font-sans py-2">
+                                                <option key={lang} value={lang} className="bg-surface text-text-primary lowercase font-sans py-2">
                                                     {lang}
                                                 </option>
                                             ))}
@@ -450,10 +451,10 @@ export const ChatPanel: React.FC = () => {
                                         <select
                                             value={currentAge}
                                             onChange={(e) => setCurrentAge(e.target.value)}
-                                            className="bg-white/5 hover:bg-white/10 text-[11px] uppercase tracking-widest font-heading text-text-muted hover:text-primary px-3 py-1.5 rounded-lg border border-white/5 outline-none appearance-none cursor-pointer transition-all pr-8"
+                                            className="bg-surface-hover hover:bg-surface text-[11px] uppercase tracking-widest font-heading text-text-muted hover:text-primary px-3 py-1.5 rounded-lg border border-border outline-none appearance-none cursor-pointer transition-all pr-8"
                                         >
                                             {ages.map(age => (
-                                                <option key={age} value={age} className="bg-[#1a1b26] text-text-primary lowercase font-sans py-2">
+                                                <option key={age} value={age} className="bg-surface text-text-primary lowercase font-sans py-2">
                                                     Age: {age}
                                                 </option>
                                             ))}
@@ -476,7 +477,7 @@ export const ChatPanel: React.FC = () => {
                                     disabled={!input.trim() || isLoading}
                                     className={`p-2 md:p-2.5 rounded-xl transition-all flex items-center justify-center shrink-0 ml-2 ${input.trim() && !isLoading
                                         ? 'bg-primary text-background shadow-glow'
-                                        : 'bg-white/5 text-text-muted opacity-40'
+                                        : 'bg-surface-hover text-text-muted opacity-40'
                                         }`}
                                 >
                                     <Send size={20} className={`w-4 h-4 md:w-5 md:h-5 ${isLoading ? 'animate-pulse' : ''}`} />

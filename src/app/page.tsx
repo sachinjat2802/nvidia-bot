@@ -12,6 +12,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 
 import { ChatPanel } from '@/components/ChatPanel';
+import { ThemeToggle } from '@/components/ThemeToggle';
 
 const WorkflowsPanel = () => <div className="p-8 h-full flex items-center justify-center text-text-muted italic opacity-50">Workflows Interface Integration in progress...</div>;
 const RAGPanel = () => <div className="p-8 h-full flex items-center justify-center text-text-muted italic opacity-50">RAG Interface Integration in progress...</div>;
@@ -31,36 +32,39 @@ export default function Home() {
     ];
 
     return (
-        <div className="flex flex-col h-screen bg-background text-text-primary overflow-hidden font-sans">
+        <div className="flex flex-col h-screen bg-background text-text-primary overflow-hidden font-sans transition-colors duration-300">
             {/* Header */}
-            <header className="h-[70px] border-b border-white/5 flex items-center justify-between px-8 bg-[#0a0a0f]/80 backdrop-blur-xl z-50">
+            <header className="h-[70px] border-b border-border flex items-center justify-between px-8 bg-background/80 backdrop-blur-xl z-50">
                 <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-primary via-primary/50 to-transparent flex items-center justify-center shadow-[0_0_20px_rgba(0,229,255,0.2)] border border-white/10 group overflow-hidden">
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-primary via-primary/50 to-transparent flex items-center justify-center shadow-glow border border-border group overflow-hidden">
                         <motion.div
                             animate={{ rotate: [0, 90, 180, 270, 360] }}
                             transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-                            className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(0,229,255,0.2)_0%,transparent_70%)]"
+                            className="absolute inset-0 bg-[radial-gradient(circle_at_center,var(--primary-dim)_0%,transparent_70%)]"
                         />
-                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" className="relative z-10">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="relative z-10 text-white">
                             <path d="M12 2L2 7L12 12L22 7L12 2Z" />
                             <path d="M2 17L12 22L22 17" />
                             <path d="M2 12L12 17L22 12" />
                         </svg>
                     </div>
                     <div>
-                        <h1 className="font-heading font-black text-2xl tracking-[0.1em] text-white glow-text uppercase leading-none">
+                        <h1 className="font-heading font-black text-2xl tracking-[0.1em] text-text-primary glow-text uppercase leading-none">
                             Moonu Bot
                         </h1>
                     </div>
                 </div>
 
-                <div className="flex items-center gap-6">
-                    <div className="hidden md:flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10 rounded-full">
+                <div className="flex items-center gap-4 md:gap-6">
+                    <div className="hidden lg:flex items-center gap-2 px-4 py-2 bg-surface border border-border rounded-full">
                         <div className="w-2 h-2 rounded-full bg-primary animate-pulse shadow-glow" />
-                        <span className="text-[11px] font-heading font-bold tracking-widest text-text-secondary">SYSTEM ONLINE</span>
+                        <span className="text-[11px] font-heading font-bold tracking-widest text-text-secondary uppercase">SYSTEM ONLINE</span>
                     </div>
+
+                    <ThemeToggle />
+
                     <button
-                        className="md:hidden p-2.5 hover:bg-white/5 rounded-xl text-text-secondary transition-all"
+                        className="md:hidden p-2.5 hover:bg-surface-hover rounded-xl text-text-secondary transition-all border border-border"
                         onClick={() => setIsSidebarOpen(!isSidebarOpen)}
                     >
                         {isSidebarOpen ? <X size={24} /> : <Menu size={24} />}
@@ -69,7 +73,7 @@ export default function Home() {
             </header>
 
             {/* Tabs Navigation */}
-            <nav className="flex px-10 border-b border-white/5 bg-[#0a0a0f] z-40">
+            <nav className="flex px-10 border-b border-border bg-background z-40">
                 {tabs.map((tab) => (
                     <button
                         key={tab.id}
@@ -126,14 +130,14 @@ export default function Home() {
                             animate={{ x: 0 }}
                             exit={{ x: '-100%' }}
                             transition={{ type: 'spring', damping: 30, stiffness: 200 }}
-                            className="fixed inset-y-0 left-0 w-[320px] bg-surface border-r border-white/10 z-[70] md:hidden p-8"
+                            className="fixed inset-y-0 left-0 w-[320px] bg-surface border-r border-border z-[70] md:hidden p-8"
                         >
                             <div className="flex justify-between items-center mb-10">
                                 <h3 className="font-heading text-primary text-xs uppercase tracking-[0.3em] font-black">History</h3>
-                                <button onClick={() => setIsSidebarOpen(false)} className="p-2 hover:bg-white/5 rounded-lg"><X size={20} /></button>
+                                <button onClick={() => setIsSidebarOpen(false)} className="p-2 hover:bg-surface-hover rounded-lg"><X size={20} /></button>
                             </div>
                             <div className="space-y-4">
-                                <div className="p-6 rounded-2xl bg-white/5 border border-white/10 text-center text-sm text-text-muted italic opacity-60">
+                                <div className="p-6 rounded-2xl bg-surface-hover border border-border text-center text-sm text-text-muted italic opacity-60">
                                     No histories found.
                                     <br />
                                     Start a conversation!

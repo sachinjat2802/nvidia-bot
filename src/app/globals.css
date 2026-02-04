@@ -3,8 +3,10 @@
 @tailwind utilities;
 
 :root {
+    /* Theme 1: Cyber Dark (Existing) */
     --primary: #00e5ff;
     --primary-hover: #00b8d4;
+    --primary-dim: rgba(0, 229, 255, 0.15);
     --background: #0a0a0f;
     --surface: #12121e;
     --surface-hover: #1a1a2b;
@@ -12,6 +14,48 @@
     --text-secondary: #b8b9c1;
     --text-muted: #888995;
     --border: rgba(255, 255, 255, 0.08);
+}
+
+[data-theme='light'] {
+    /* Theme 2: Black and White Light */
+    --primary: #000000;
+    --primary-hover: #333333;
+    --primary-dim: rgba(0, 0, 0, 0.05);
+    --background: #ffffff;
+    --surface: #f7f7f8;
+    --surface-hover: #eeeeef;
+    --text-primary: #000000;
+    --text-secondary: #4b4b4b;
+    --text-muted: #717171;
+    --border: rgba(0, 0, 0, 0.1);
+}
+
+[data-theme='pitch-black'] {
+    /* Theme 3: White and Black Dark */
+    --primary: #ffffff;
+    --primary-hover: #dddddd;
+    --primary-dim: rgba(255, 255, 255, 0.1);
+    --background: #000000;
+    --surface: #0a0a0a;
+    --surface-hover: #141414;
+    --text-primary: #ffffff;
+    --text-secondary: #a0a0a0;
+    --text-muted: #666666;
+    --border: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme='chatgpt'] {
+    /* Theme 4: Classic ChatGPT */
+    --primary: #10a37f;
+    --primary-hover: #1a7f64;
+    --primary-dim: rgba(16, 163, 127, 0.1);
+    --background: #212121;
+    --surface: #2f2f2f;
+    --surface-hover: #3a3a3a;
+    --text-primary: #ececf1;
+    --text-secondary: #c5c5d2;
+    --text-muted: #9a9ab0;
+    --border: rgba(255, 255, 255, 0.1);
 }
 
 body {
@@ -32,18 +76,17 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.1);
+    background: var(--border);
     border-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
     background: var(--primary);
-    box-shadow: 0 0 10px var(--primary);
 }
 
 /* Utilities */
 .glass {
-    background: rgba(18, 18, 30, 0.7);
+    background: var(--surface);
     backdrop-filter: blur(12px);
     border: 1px solid var(--border);
 }
@@ -53,7 +96,7 @@ body {
 }
 
 .glow-border {
-    box-shadow: 0 0 15px rgba(0, 229, 255, 0.15);
+    box-shadow: 0 0 15px var(--primary-dim);
 }
 
 .hide-scrollbar {

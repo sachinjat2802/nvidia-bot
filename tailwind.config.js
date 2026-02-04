@@ -7,15 +7,21 @@ module.exports = {
         extend: {
             colors: {
                 primary: {
-                    DEFAULT: '#00e5ff',
-                    hover: '#00b8d4',
-                    dim: 'rgba(0, 229, 255, 0.15)',
+                    DEFAULT: 'var(--primary)',
+                    hover: 'var(--primary-hover)',
+                    dim: 'var(--primary-dim)',
                 },
-                background: '#0a0a0f',
+                background: 'var(--background)',
                 surface: {
-                    DEFAULT: '#12121e',
-                    hover: '#1a1a2b',
-                }
+                    DEFAULT: 'var(--surface)',
+                    hover: 'var(--surface-hover)',
+                },
+                text: {
+                    primary: 'var(--text-primary)',
+                    secondary: 'var(--text-secondary)',
+                    muted: 'var(--text-muted)',
+                },
+                border: 'var(--border)',
             },
             fontFamily: {
                 heading: ['var(--font-orbitron)'],
@@ -23,7 +29,7 @@ module.exports = {
                 mono: ['var(--font-mono)'],
             },
             boxShadow: {
-                'glow': '0 0 15px rgba(0, 229, 255, 0.5)',
+                'glow': '0 0 15px var(--primary-dim)',
             }
         },
     },
