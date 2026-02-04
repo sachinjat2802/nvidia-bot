@@ -13,9 +13,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 import { ChatPanel } from '@/components/ChatPanel';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { RAGPanel } from '@/components/RAGPanel';
 
 const WorkflowsPanel = () => <div className="p-8 h-full flex items-center justify-center text-text-muted italic opacity-50">Workflows Interface Integration in progress...</div>;
-const RAGPanel = () => <div className="p-8 h-full flex items-center justify-center text-text-muted italic opacity-50">RAG Interface Integration in progress...</div>;
+// RAGPanel imported from components
 const ImagePanel = () => <div className="p-8 h-full flex items-center justify-center text-text-muted italic opacity-50">Image Interface Integration in progress...</div>;
 
 type TabId = 'chat' | 'workflows' | 'rag' | 'image';
@@ -26,8 +27,8 @@ export default function Home() {
 
     const tabs = [
         { id: 'chat', label: 'Chat', icon: <MessageSquare size={18} /> },
-        { id: 'workflows', label: 'Workflows', icon: <Workflow size={18} /> },
         { id: 'rag', label: 'RAG', icon: <BookOpen size={18} /> },
+        { id: 'workflows', label: 'Workflows', icon: <Workflow size={18} /> },
         { id: 'image', label: 'Image', icon: <ImageIcon size={18} /> },
     ];
 

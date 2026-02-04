@@ -14,31 +14,38 @@ export interface UploadedFile {
 
 export async function extractTextFromFile(filePath: string, mimetype: string): Promise<string> {
     try {
-        const ext = path.extname(filePath).toLowerCase();
+        const buffer = await fs.promises.readFile(filePath);
+        return extractTextFromBuffer(buffer, mimetype, path.extname(filePath));
+    } catch (error: any) {
+        throw new Error(`Failed to extract text from file: ${error.message}`);
+    }
+}
+
+export async function extractTextFromBuffer(buffer: Buffer, mimetype: string, extension?: string): Promise<string> {
+    try {
+        const ext = extension?.toLowerCase() || '';
 
         if (mimetype.startsWith('text/') || ext === '.txt' || ext === '.md' || ext === '.json' || ext === '.csv') {
-            return fs.promises.readFile(filePath, 'utf-8');
+            return buffer.toString('utf-8');
         }
 
         if (mimetype === 'application/pdf' || ext === '.pdf') {
-            const data = await fs.promises.readFile(filePath);
-            const result = await pdf(data);
+            const result = await pdf(buffer);
             return result.text;
         }
 
         if (mimetype === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' || ext === '.docx') {
-            const buffer = await fs.promises.readFile(filePath);
             const result = await mammoth.extractRawText({ buffer });
             return result.value;
         }
 
         if (mimetype.startsWith('image/')) {
-            return `[Image file: ${path.basename(filePath)}]`;
+            return `[Image file]`;
         }
 
         return `[Unsupported file type: ${mimetype}]`;
     } catch (error: any) {
-        throw new Error(`Failed to extract text from file: ${error.message}`);
+        throw new Error(`Failed to extract text from buffer: ${error.message}`);
     }
 }
 
