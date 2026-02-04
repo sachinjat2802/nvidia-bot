@@ -36,17 +36,13 @@ export default function Home() {
             {/* Header */}
             <header className="h-[70px] border-b border-border flex items-center justify-between px-8 bg-background/80 backdrop-blur-xl z-50">
                 <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-primary via-primary/50 to-transparent flex items-center justify-center shadow-glow border border-border group overflow-hidden">
-                        <motion.div
-                            animate={{ rotate: [0, 90, 180, 270, 360] }}
-                            transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-                            className="absolute inset-0 bg-[radial-gradient(circle_at_center,var(--primary-dim)_0%,transparent_70%)]"
+                    <div className="w-10 h-10 flex items-center justify-center group overflow-hidden relative">
+                        <img
+                            src="/logo-m.png"
+                            alt="Moonu Bot Logo"
+                            className="w-full h-full object-contain relative z-10 brightness-110 contrast-125"
+                            style={{ filter: 'invert(1) hue-rotate(180deg) brightness(1.5)' }}
                         />
-                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="relative z-10 text-white">
-                            <path d="M12 2L2 7L12 12L22 7L12 2Z" />
-                            <path d="M2 17L12 22L22 17" />
-                            <path d="M2 12L12 17L22 12" />
-                        </svg>
                     </div>
                     <div>
                         <h1 className="font-heading font-black text-2xl tracking-[0.1em] text-text-primary glow-text uppercase leading-none">

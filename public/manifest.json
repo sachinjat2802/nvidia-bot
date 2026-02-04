@@ -1,0 +1,21 @@
+{
+    "name": "Moonu Bot",
+    "short_name": "Moonu Bot",
+    "description": "A powerful AI chatbot using NVIDIA models",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#000000",
+    "theme_color": "#76b900",
+    "icons": [
+        {
+            "src": "/logo-m.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        },
+        {
+            "src": "/logo-m.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        }
+    ]
+}

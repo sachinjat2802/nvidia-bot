@@ -3,10 +3,10 @@
 @tailwind utilities;
 
 :root {
-    /* Theme 1: Cyber Dark (Existing) */
-    --primary: #00e5ff;
-    --primary-hover: #00b8d4;
-    --primary-dim: rgba(0, 229, 255, 0.15);
+    /* Theme 1: NVIDIA Green Dark */
+    --primary: #76b900;
+    --primary-hover: #5d9200;
+    --primary-dim: rgba(118, 185, 0, 0.15);
     --background: #0a0a0f;
     --surface: #12121e;
     --surface-hover: #1a1a2b;

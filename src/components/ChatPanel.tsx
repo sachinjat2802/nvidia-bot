@@ -311,8 +311,14 @@ export const ChatPanel: React.FC = () => {
                                 initial={{ scale: 0.8, opacity: 0 }}
                                 animate={{ scale: 1, opacity: 1 }}
                                 transition={{ duration: 0.5 }}
+                                className="w-20 h-20 rounded-3xl overflow-hidden shadow-glow border border-primary/20 mb-8"
                             >
-                                <Sparkles className="mb-8 text-primary opacity-60" size={64} />
+                                <img
+                                    src="/logo-m.png"
+                                    alt="Bot"
+                                    className="w-full h-full object-contain"
+                                    style={{ filter: 'invert(1) hue-rotate(180deg) brightness(1.5)' }}
+                                />
                             </motion.div>
                             <h2 className="text-3xl font-heading mb-4 text-text-primary tracking-tight">How can I help you today?</h2>
                         </div>
@@ -329,7 +335,16 @@ export const ChatPanel: React.FC = () => {
                                 ? 'bg-surface border-border'
                                 : 'bg-gradient-to-br from-primary to-primary-hover border-primary/20 text-background shadow-glow'
                                 }`}>
-                                {msg.role === 'user' ? <User size={18} className="w-4 h-4 md:w-[18px] md:h-[18px]" /> : <Bot size={18} className="w-4 h-4 md:w-[18px] md:h-[18px]" />}
+                                {msg.role === 'user' ? (
+                                    <User size={18} className="w-4 h-4 md:w-[18px] md:h-[18px]" />
+                                ) : (
+                                    <img
+                                        src="/logo-m.png"
+                                        alt="Bot"
+                                        className="w-full h-full object-contain"
+                                        style={{ filter: 'invert(1) hue-rotate(180deg) brightness(1.5)' }}
+                                    />
+                                )}
                             </div>
                             <div className={`max-w-[90%] md:max-w-[85%] rounded-2xl px-4 md:px-6 py-3 md:py-4 leading-relaxed text-[0.95rem] md:text-[1rem] shadow-sm ${msg.role === 'user'
                                 ? 'bg-surface border border-border text-text-primary rounded-tr-none'

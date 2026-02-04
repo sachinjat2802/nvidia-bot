@@ -9,6 +9,23 @@ const jetbrainsMono = JetBrains_Mono({ subsets: ['latin'], variable: '--font-mon
 export const metadata: Metadata = {
     title: 'Moonu Bot',
     description: 'A powerful AI assistant powered by NVIDIA AI',
+    manifest: '/manifest.json',
+    appleWebApp: {
+        capable: true,
+        statusBarStyle: 'default',
+        title: 'Moonu Bot',
+    },
+    formatDetection: {
+        telephone: false,
+    },
+};
+
+export const viewport = {
+    themeColor: '#76b900',
+    initialScale: 1,
+    width: 'device-width',
+    maximumScale: 1,
+    userScalable: false,
 };
 
 export default function RootLayout({
