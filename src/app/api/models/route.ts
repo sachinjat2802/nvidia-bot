@@ -20,7 +20,6 @@ const HINDI_ALIASES: Record<string, string> = {
     'mistralai/mistral-large-2411': 'Vajra-Samrat (वज्र सम्राट)',
     'mistralai/ministral-14b-instruct-2512': 'Vajra-Laghu (वज्र लघु)',
     'nvidia/llama-3.3-70b-instruct': 'Chanakya-Guru (चाणक्य गुरु)',
-    'nvidia/nemotron-4-340b-instruct': 'Brahmand (ब्रह्मांड)',
     'meta/llama-3.1-405b-instruct': 'Vishwa-Swaroop (विश्वरूप)',
 
     // Deep Intelligence & Agents
@@ -45,7 +44,6 @@ const HINDI_ALIASES: Record<string, string> = {
     'microsoft/phi-4-multimodal-instruct': 'Phi-Vishwa (फाई विश्व)',
 
     // Specialized Models
-    'nvidia/nemotron-4-mini-hindi-4b-instruct': 'Deshi-Bhasha (देशी भाषा)',
     'nvidia/nemotron-content-safety-reasoning-4b': 'Rakshak-Reasoning (रक्षक)',
     'nvidia/cosmos-reason2-8b': 'Drishti-Vichar (दृष्टि विचार)',
     'nvidia/riva-translate-4b-instruct-v1_1': 'Anuvadak (अनुवादक)',
