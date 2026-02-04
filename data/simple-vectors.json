@@ -6,9 +6,21 @@
       "title": "The Fab 100 Australia: A Year of Creator Discovery, Revealed - Blog | Fabulate",
       "url": "https://fabulate.com.au/blog/the-fab-100-a-year-of-creator-discovery-revealed",
       "sourceType": "web",
-      "dateFetched": "2026-02-04T15:36:59.580Z"
+      "dateFetched": "2026-02-04T15:55:17.195Z"
     },
     "source": "web",
-    "createdAt": "2026-02-04T15:36:59.580Z"
+    "createdAt": "2026-02-04T15:55:17.195Z"
+  },
+  {
+    "id": "https://www.linkedin.com/feed/update/urn:li:activity:7424680287944630272/",
+    "content": "Sachin Jat’s Post Sachin Jat 10h Edited Report this post 🤖 Weekend Build: Monnu Bot (Indian Languages Experiment) Built a small AI bot over the weekend Monnu Bot. 👉 Try it here: https://lnkd.in/gxN4Ht9f This is an early-stage experiment, not a product launch. One specific thing I’m testing: handling prompts in Indian languages, including mixed usage (English + Indian language in the same input). What it currently does: Accepts prompts in Indian languages Attempts basic conversational responses Helps identify where language understanding fails Exposes real limitations fast What it does not do: Perfect translations ❌ Deep cultural or linguistic accuracy ❌ Reliable responses for all languages ❌ This is about learning, not claiming “AI for India”. If you try it in your language and it breaks that’s useful. If it works even better, still needs improvement. Built over a weekend. Iterating based on reality, not demos. #WeekendProject #IndianLanguages #AI #Chatbot #BuildInPublic #Engineering 4 Like Comment Share Copy LinkedIn Facebook X To view or add a comment, sign in 2,696 followers 49 Posts View Profile Follow Explore content categories Career Productivity Finance Soft Skills & Emotional Intelligence Project Management Education Technology Leadership Ecommerce User Experience Show more Show less",
+    "metadata": {
+      "title": "#weekendproject #indianlanguages #ai #chatbot #buildinpublic #engineering | Sachin Jat",
+      "url": "https://www.linkedin.com/feed/update/urn:li:activity:7424680287944630272/",
+      "sourceType": "web",
+      "dateFetched": "2026-02-04T15:55:38.243Z"
+    },
+    "source": "web",
+    "createdAt": "2026-02-04T15:55:38.243Z"
   }
 ]
