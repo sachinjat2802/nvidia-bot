@@ -42,6 +42,8 @@
         "src/index.ts",
         "src/web-server.ts",
         "src/test-workflow.ts",
+        "test-workflow-system.ts",
+        "test-workflow.ts",
         "examples"
     ]
 }

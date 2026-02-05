@@ -13,7 +13,7 @@ export class RedisCache {
     private enabled: boolean;
     private localCache: Map<string, CacheEntry<any>>;
     private localCacheSize: number;
-    
+
     constructor(
         options: {
             enabled?: boolean;
@@ -24,24 +24,24 @@ export class RedisCache {
         this.enabled = options.enabled !== false;
         this.localCacheSize = options.localCacheSize || 100;
         this.localCache = new Map();
-        
+
         // Initialize circuit breaker for Redis operations
         this.circuitBreaker = new CircuitBreaker(
             5, // failure threshold
             30000, // reset timeout
             10 // half-open max calls
         );
-        
+
         if (this.enabled) {
             this.initializeRedis();
         }
     }
-    
+
     private initializeRedis(): void {
         try {
             const token = process.env.UPSTASH_REDIS_REST_TOKEN;
             const url = process.env.UPSTASH_REDIS_REST_URL;
-            
+
             if (token && url) {
                 this.redis = new Redis({
                     token: token,
@@ -58,10 +58,10 @@ export class RedisCache {
             this.redis = null;
         }
     }
-    
+
     async get<T>(key: string): Promise<T | null> {
         if (!this.enabled) return null;
-        
+
         try {
             // Check local cache first
             const localEntry = this.localCache.get(key);
@@ -70,11 +70,12 @@ export class RedisCache {
             } else if (localEntry) {
                 this.localCache.delete(key);
             }
-            
+
             // Check Redis with circuit breaker
             if (this.redis) {
+                const redisClient = this.redis;
                 return await this.circuitBreaker.execute(async () => {
-                    const value = await this.redis.get(key);
+                    const value = await redisClient.get(key);
                     if (value) {
                         // Store in local cache
                         const ttl = 300; // Default 5 minutes in seconds
@@ -84,95 +85,100 @@ export class RedisCache {
                     return null;
                 });
             }
-            
+
             return null;
         } catch (error) {
             console.error('Redis get error:', error);
             return null;
         }
     }
-    
+
     async set(key: string, value: any, ttl?: number): Promise<boolean> {
         if (!this.enabled) return false;
-        
+
         try {
             const ttlSeconds = ttl ? Math.ceil(ttl / 1000) : 300; // Default 5 minutes
-            
+            const localTtl = ttl || 300000;
+
             // Set in local cache
-            this.setLocal(key, value, ttl);
-            
+            this.setLocal(key, value, localTtl);
+
             // Set in Redis with circuit breaker
             if (this.redis) {
+                const redisClient = this.redis;
                 return await this.circuitBreaker.execute(async () => {
-                    await this.redis.set(key, value, { ex: ttlSeconds });
+                    await redisClient.set(key, value, { ex: ttlSeconds });
                     return true;
                 });
             }
-            
+
             return true; // Local cache only
         } catch (error) {
             console.error('Redis set error:', error);
             return false;
         }
     }
-    
+
     async del(key: string): Promise<boolean> {
         if (!this.enabled) return false;
-        
+
         try {
             this.localCache.delete(key);
-            
+
             if (this.redis) {
+                const redisClient = this.redis;
                 return await this.circuitBreaker.execute(async () => {
-                    await this.redis.del(key);
+                    await redisClient.del(key);
                     return true;
                 });
             }
-            
+
             return true;
         } catch (error) {
             console.error('Redis del error:', error);
             return false;
         }
     }
-    
+
     async exists(key: string): Promise<boolean> {
         if (!this.enabled) return false;
-        
+
         try {
             const localEntry = this.localCache.get(key);
             if (localEntry && localEntry.expiresAt > Date.now()) {
                 return true;
             }
-            
+
             if (this.redis) {
+                const redisClient = this.redis;
                 return await this.circuitBreaker.execute(async () => {
-                    const exists = await this.redis.exists(key);
+                    const exists = await redisClient.exists(key);
                     return exists === 1;
                 });
             }
-            
+
             return false;
         } catch (error) {
             console.error('Redis exists error:', error);
             return false;
         }
     }
-    
+
     async clear(): Promise<void> {
         this.localCache.clear();
-        
+
         if (this.redis) {
+            const redisClient = this.redis;
             try {
                 await this.circuitBreaker.execute(async () => {
-                    await this.redis.flushall();
+                    await redisClient.flushall();
                 });
             } catch (error) {
                 console.error('Redis clear error:', error);
             }
         }
     }
-    
+
     async getStats(): Promise<{
         localSize: number;
         redisConnected: boolean;
@@ -184,7 +190,7 @@ export class RedisCache {
             circuitBreakerState: this.circuitBreaker.getState().state
         };
     }
-    
+
     private setLocal(key: string, value: any, ttl: number): void {
         if (this.localCache.size >= this.localCacheSize) {
             // Remove oldest entry (simple FIFO for local cache)
@@ -193,14 +199,14 @@ export class RedisCache {
                 this.localCache.delete(firstKey);
             }
         }
-        
+
         this.localCache.set(key, {
             value,
             expiresAt: Date.now() + ttl,
             createdAt: Date.now()
         });
     }
-    
+
     // Cleanup expired local cache entries
     cleanupLocalCache(): void {
         const now = Date.now();
@@ -210,11 +216,11 @@ export class RedisCache {
             }
         }
     }
-    
+
     isEnabled(): boolean {
         return this.enabled;
     }
-    
+
     getCircuitBreakerState() {
         return this.circuitBreaker.getState();
     }

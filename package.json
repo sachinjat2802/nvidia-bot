@@ -22,6 +22,7 @@
         "@ducanh2912/next-pwa": "^10.2.9",
         "@pinecone-database/pinecone": "^7.0.0",
         "@supabase/supabase-js": "^2.94.1",
+        "@upstash/redis": "^1.36.2",
         "axios": "^1.13.4",
         "chalk": "^4.1.2",
         "cheerio": "^1.2.0",

@@ -1,13 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import { signIn, getSession } from 'next-auth/react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { Mail, Lock, Eye, EyeOff, AlertCircle } from 'lucide-react';
 
-export default function LoginPage() {
+function LoginForm() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
@@ -137,5 +137,17 @@ export default function LoginPage() {
                 </p>
             </motion.div>
         </div>
+    );
+}
+
+export default function LoginPage() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen flex items-center justify-center bg-background">
+                <div className="animate-pulse text-text-secondary">Loading...</div>
+            </div>
+        }>
+            <LoginForm />
+        </Suspense>
     );
 }
