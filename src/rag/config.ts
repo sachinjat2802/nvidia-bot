@@ -6,21 +6,21 @@ export interface RAGConfig {
     enableCache: boolean;
     cacheSize: number;
     cacheTTL: number; // in milliseconds
-    
+
     // Query processing
     enableQueryExpansion: boolean;
     enableStopWords: boolean;
     minTermLength: number;
-    
+
     // Performance
     lockTimeout: number;
     maxRetries: number;
     batchSize: number;
-    
+
     // Monitoring
     enableMetrics: boolean;
     metricsRetention: number; // in milliseconds
-    
+
     // Circuit breaker
     circuitBreakerEnabled: boolean;
     circuitBreakerFailureThreshold: number;
@@ -50,38 +50,38 @@ export const DEFAULT_RAG_CONFIG: RAGConfig = {
 export class RAGConfiguration {
     private config: RAGConfig;
     private static instance: RAGConfiguration;
-    
+
     private constructor(config: Partial<RAGConfig> = {}) {
         this.config = { ...DEFAULT_RAG_CONFIG, ...config };
     }
-    
+
     static getInstance(): RAGConfiguration {
         if (!RAGConfiguration.instance) {
             RAGConfiguration.instance = new RAGConfiguration();
         }
         return RAGConfiguration.instance;
     }
-    
+
     setConfig(config: Partial<RAGConfig>): void {
         this.config = { ...this.config, ...config };
     }
-    
+
     getConfig(): RAGConfig {
         return { ...this.config };
     }
-    
+
     get(key: keyof RAGConfig): any {
         return this.config[key];
     }
-    
+
     set(key: keyof RAGConfig, value: any): void {
-        this.config[key] = value;
+        (this.config as any)[key] = value;
     }
-    
+
     // Load from environment variables
     static fromEnv(): RAGConfiguration {
         const config = new RAGConfiguration();
-        
+
         if (process.env.RAG_DEFAULT_LIMIT) {
             config.set('defaultLimit', parseInt(process.env.RAG_DEFAULT_LIMIT, 10));
         }
@@ -124,7 +124,7 @@ export class RAGConfiguration {
         if (process.env.RAG_CIRCUIT_BREAKER_ENABLED) {
             config.set('circuitBreakerEnabled', process.env.RAG_CIRCUIT_BREAKER_ENABLED === 'true');
         }
-        
+
         return config;
     }
 }
