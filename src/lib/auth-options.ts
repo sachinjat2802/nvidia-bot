@@ -12,7 +12,7 @@ export const authOptions: NextAuthOptions = {
             },
             async authorize(credentials) {
                 console.log('Auth attempt for:', credentials?.email);
-                
+
                 if (!credentials?.email || !credentials?.password) {
                     console.log('Missing credentials');
                     return null;
@@ -50,7 +50,7 @@ export const authOptions: NextAuthOptions = {
                         .select('*')
                         .eq('id', data.user.id)
                         .single();
-                    
+
                     if (profileError) {
                         // If the error is "no rows", that's fine - user just doesn't have a profile yet
                         if (profileError.code === 'PGRST116') {
@@ -122,7 +122,6 @@ export const authOptions: NextAuthOptions = {
     },
     pages: {
         signIn: '/login',
-        signUp: '/signup',
     },
     secret: process.env.NEXTAUTH_SECRET,
 };
