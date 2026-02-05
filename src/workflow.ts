@@ -1,111 +1,208 @@
-export type StepType = 'llm' | 'code' | 'conditional' | 'delay' | 'http' | 'file';
+// Workflow type definitions
+
+export type StepType = 
+    | 'llm'
+    | 'http'
+    | 'code'
+    | 'database'
+    | 'email'
+    | 'storage'
+    | 'webhook'
+    | 'transform'
+    | 'conditional'
+    | 'delay'
+    | 'file';
 
 export interface WorkflowStep {
     id: string;
     type: StepType;
     name: string;
     description?: string;
-
-    // LLM step config
-    llmConfig?: {
-        model?: string;
-        systemPrompt?: string;
-        temperature?: number;
-        maxTokens?: number;
-    };
-
-    // Code step config
-    codeConfig?: {
-        language: 'javascript' | 'typescript' | 'python' | 'bash';
-        code: string;
-        timeoutMs?: number;
-    };
-
-    // Conditional step config
-    conditionalConfig?: {
-        condition: string; // JavaScript expression evaluating against context
-        thenStepId: string;
-        elseStepId?: string;
-    };
-
-    // Delay step config
-    delayConfig?: {
-        milliseconds: number;
-    };
-
-    // HTTP step config
-    httpConfig?: {
-        url: string;
-        method: 'GET' | 'POST' | 'PUT' | 'DELETE';
-        headers?: Record<string, string>;
-        body?: any;
-        timeoutMs?: number;
-    };
-
-    // File step config
-    fileConfig?: {
-        operation: 'read' | 'write' | 'delete';
-        path: string;
-        content?: string;
-    };
-
-    // Dependencies
-    dependsOn?: string[]; // Step IDs that must complete before this step
-
-    // Output mapping
-    outputMapping?: Record<string, string>; // Maps step outputs to context keys
+    dependsOn?: string[];
+    outputMapping: Record<string, string>;
+    
+    // Configuration per step type
+    llmConfig?: LLMConfig;
+    codeConfig?: CodeConfig;
+    conditionalConfig?: ConditionalConfig;
+    delayConfig?: DelayConfig;
+    httpConfig?: HttpConfig;
+    fileConfig?: FileConfig;
+    databaseConfig?: DatabaseConfig;
+    emailConfig?: EmailConfig;
+    storageConfig?: StorageConfig;
+    webhookConfig?: WebhookConfig;
+    transformConfig?: TransformConfig;
 }
 
-export interface WorkflowContext {
-    [key: string]: any;
-    _stepResults: Record<string, StepResult>;
-    _workflowId: string;
-    _currentStepId?: string;
+export interface LLMConfig {
+    model: string;
+    systemPrompt?: string;
+    content: string;
+    temperature?: number;
+    maxTokens?: number;
+    topP?: number;
+    frequencyPenalty?: number;
+    presencePenalty?: number;
+    stopSequences?: string[];
 }
 
-export interface StepResult {
-    stepId: string;
-    status: 'success' | 'failed' | 'skipped' | 'timeout';
-    output?: any;
-    error?: string;
-    startedAt: Date;
-    completedAt?: Date;
-    durationMs?: number;
+export interface CodeConfig {
+    code: string;
+    language?: 'javascript' | 'typescript' | 'python';
+    timeoutMs?: number;
+}
+
+export interface ConditionalConfig {
+    condition: string;
+    thenStepId?: string;
+    elseStepId?: string;
+}
+
+export interface DelayConfig {
+    milliseconds: number;
+}
+
+export interface HttpConfig {
+    url: string;
+    method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
+    headers?: Record<string, string>;
+    body?: any;
+    responseType?: 'json' | 'text' | 'blob';
+    timeoutMs?: number;
+    useIntegration?: boolean;
+    integrationId?: string;
+}
+
+export interface FileConfig {
+    operation: 'read' | 'write' | 'delete' | 'exists';
+    path: string;
+    content?: string;
+    encoding?: 'utf8' | 'base64';
+}
+
+export interface DatabaseConnection {
+    type: 'postgres' | 'mysql' | 'mongodb' | 'mssql' | 'sqlite';
+    host?: string;
+    port?: number;
+    database?: string;
+    username?: string;
+    password?: string;
+    connectionString?: string;
+}
+
+export interface DatabaseConfig {
+    useIntegration?: boolean;
+    integrationId?: string;
+    connection?: DatabaseConnection;
+    operation: 'query' | 'select' | 'insert' | 'update' | 'delete';
+    query?: string;
+    collection?: string; // For MongoDB
+    data?: any; // For insert/update operations
+}
+
+export interface EmailConfig {
+    useIntegration?: boolean;
+    integrationId?: string;
+    to: string | string[];
+    subject: string;
+    body: string;
+    isHtml?: boolean;
+    cc?: string | string[];
+    bcc?: string | string[];
+    attachments?: Attachment[];
+}
+
+export interface Attachment {
+    filename: string;
+    content: string; // base64 encoded
+    mimeType?: string;
+}
+
+export interface StorageConfig {
+    useIntegration?: boolean;
+    integrationId?: string;
+    provider: 's3' | 'gcs' | 'azure-blob' | 'ftp' | 'sftp';
+    operation: 'upload' | 'download' | 'delete' | 'list';
+    bucket?: string;
+    key?: string;
+    localPath?: string;
+    contentType?: string;
+    acl?: string;
+    metadata?: Record<string, string>;
+}
+
+export interface WebhookConfig {
+    url: string;
+    method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
+    headers?: Record<string, string>;
+    body?: any;
+    timeoutMs?: number;
+}
+
+export interface TransformMapping {
+    source: string; // e.g., "users[0].name"
+    target: string; // e.g., "firstName"
+}
+
+export interface TransformConfig {
+    mapping: TransformMapping[];
+    filter?: string; // JavaScript expression
+    sortBy?: string;
+    sortOrder?: 'asc' | 'desc';
+    limit?: number;
+    offset?: number;
+}
+
+export interface RetryPolicy {
+    maxRetries: number;
+    backoffMs: number;
 }
 
 export interface WorkflowDefinition {
-    id: string;
+    id?: string;
     name: string;
     description?: string;
     version: string;
     steps: WorkflowStep[];
-    globalContext?: Record<string, any>;
-    retryPolicy?: {
-        maxRetries: number;
-        backoffMs: number;
-    };
-    timeoutMs?: number;
+    globalContext: Record<string, any>;
+    retryPolicy: RetryPolicy;
+    timeoutMs: number;
+    concurrency: number;
+    tags: string[];
 }
 
-export interface WorkflowExecution {
+export interface IntegrationRecord {
     id: string;
-    workflowId: string;
-    status: 'pending' | 'running' | 'completed' | 'failed' | 'stopped';
-    context: WorkflowContext;
+    user_id: string;
+    type: string;
+    name: string;
+    config: Record<string, any>;
+    is_active: boolean;
+    created_at: string;
+    updated_at: string;
+}
+
+export interface ExecutionResult {
+    status: 'completed' | 'failed' | 'stopped';
+    outputContext: Record<string, any>;
     stepResults: StepResult[];
-    currentStepId?: string;
-    queuedSteps: string[]; // Step IDs waiting to execute
-    completedSteps: Set<string>;
-    startedAt: Date;
-    completedAt?: Date;
     error?: string;
 }
 
-export interface WorkflowEngineOptions {
-    maxConcurrentSteps?: number;
-    onStepStart?: (execution: WorkflowExecution, step: WorkflowStep) => void;
-    onStepComplete?: (execution: WorkflowExecution, step: WorkflowStep, result: StepResult) => void;
-    onStepFailed?: (execution: WorkflowExecution, step: WorkflowStep, result: StepResult) => void;
-    onWorkflowComplete?: (execution: WorkflowExecution) => void;
-    onWorkflowFailed?: (execution: WorkflowExecution) => void;
+export interface StepResult {
+    stepId: string;
+    status: 'success' | 'failed';
+    output: any;
+    durationMs: number;
+    startedAt: string;
+    completedAt: string;
+    error?: string;
+}
+
+export interface WorkflowExecutionContext {
+    input: Record<string, any>;
+    context: Record<string, any>;
+    stepResults: Record<string, StepResult>;
+    workflow: WorkflowDefinition;
 }

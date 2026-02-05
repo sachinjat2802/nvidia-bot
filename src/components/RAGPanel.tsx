@@ -21,9 +21,70 @@ import {
     Leaf,
     File as FileIcon,
     Plus,
-    X
+    X,
+    Trash2
 } from 'lucide-react';
 import { marked } from 'marked';
+
+const DocumentList = () => {
+    const [docs, setDocs] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    const fetchDocs = async () => {
+        try {
+            const res = await fetch('/api/rag/documents');
+            if (res.ok) {
+                const data = await res.json();
+                setDocs(data.documents || []);
+            }
+        } catch (e) {
+            console.error(e);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchDocs();
+        // Refresh every 5s if ingesting
+        const interval = setInterval(fetchDocs, 5000);
+        return () => clearInterval(interval);
+    }, []);
+
+    const deleteDoc = async (id: string) => {
+        if (!confirm('Delete this document?')) return;
+        try {
+            await fetch(`/api/rag/documents?id=${id}`, { method: 'DELETE' });
+            setDocs(prev => prev.filter(d => d.id !== id));
+        } catch (e) {
+            console.error(e);
+        }
+    };
+
+    if (loading) return <div className="text-xs text-text-muted">Loading...</div>;
+    if (docs.length === 0) return <div className="text-xs text-text-muted italic">No documents ingested yet.</div>;
+
+    return (
+        <div className="space-y-2 max-h-60 overflow-y-auto custom-scrollbar pr-2">
+            {docs.map((doc) => (
+                <div key={doc.id} className="bg-surface border border-border px-3 py-2 rounded-lg text-xs flex items-center justify-between group hover:border-primary/30 transition-all">
+                    <div className="flex items-center gap-2 overflow-hidden">
+                        <FileText size={12} className="text-primary shrink-0" />
+                        <span className="truncate max-w-[180px]" title={doc.content}>{doc.metadata?.source || 'Unknown Source'}</span>
+                        <span className="text-[10px] text-text-muted shrink-0">{new Date(doc.createdAt).toLocaleDateString()}</span>
+                    </div>
+                    <button
+                        onClick={() => deleteDoc(doc.id)}
+                        className="opacity-0 group-hover:opacity-100 p-1 hover:bg-red-500/10 text-red-500 rounded transition-all"
+                        title="Delete"
+                    >
+                        <Trash2 size={12} />
+                    </button>
+                </div>
+            ))}
+        </div>
+    );
+};
 
 interface Message {
     id: string;
@@ -471,20 +532,11 @@ export const RAGPanel: React.FC = () => {
                         </AnimatePresence>
                     </div>
 
-                    {/* Active Connections List */}
-                    {connectedSources.length > 0 && (
-                        <div className="mt-6">
-                            <h4 className="text-[10px] uppercase font-bold text-text-muted tracking-wide mb-2">Connected Knowledge Base</h4>
-                            <div className="flex flex-wrap gap-2">
-                                {connectedSources.map((source, i) => (
-                                    <div key={i} className="bg-surface border border-border px-3 py-1.5 rounded-full text-xs flex items-center gap-2">
-                                        <CheckCircle size={10} className="text-green-500" />
-                                        {source}
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    )}
+                    {/* Persistent Document List */}
+                    <div className="mt-6">
+                        <h4 className="text-[10px] uppercase font-bold text-text-muted tracking-wide mb-2">Knowledge Base</h4>
+                        <DocumentList />
+                    </div>
                 </section>
 
                 {/* 2. Model Selection */}

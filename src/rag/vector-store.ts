@@ -1,6 +1,6 @@
 import { VectorStore, Document } from './types';
 
-export class SimpleVectorStore implements VectorStore {
+export class MockVectorStore implements VectorStore {
     private store: Document[] = [];
 
     async addDocuments(documents: Document[]): Promise<void> {

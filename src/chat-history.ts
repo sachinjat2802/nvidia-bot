@@ -1,6 +1,4 @@
-
-import fs from 'fs';
-import path from 'path';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { Message } from './chat';
 
 export interface ChatSessionData {
@@ -12,90 +10,110 @@ export interface ChatSessionData {
 }
 
 export class ChatHistoryManager {
-    private storageDir: string;
+    private supabase: SupabaseClient;
+    private userId: string;
 
-    constructor(storageDir: string) {
-        this.storageDir = storageDir;
-        if (!fs.existsSync(this.storageDir)) {
-            fs.mkdirSync(this.storageDir, { recursive: true });
-        }
-    }
+    constructor(userId: string) {
+        this.userId = userId;
+        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+        const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
-    private getFilePath(id: string): string {
-        return path.join(this.storageDir, `${id}.json`);
+        this.supabase = createClient(supabaseUrl, supabaseServiceKey);
     }
 
     async createSession(title: string, initialMessages: Message[] = []): Promise<ChatSessionData> {
-        const id = Date.now().toString() + '-' + Math.random().toString(36).substr(2, 9);
-        const session: ChatSessionData = {
-            id,
-            title,
-            createdAt: Date.now(),
-            updatedAt: Date.now(),
-            messages: initialMessages
-        };
-        await this.saveSession(session);
-        return session;
+        const { data, error } = await this.supabase
+            .from('chat_sessions')
+            .insert({
+                user_id: this.userId,
+                title: title,
+                messages: initialMessages,
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString()
+            })
+            .select()
+            .single();
+
+        if (error) throw new Error(`Failed to create session: ${error.message}`);
+
+        return this.mapToSessionData(data);
     }
 
     async saveSession(session: ChatSessionData): Promise<void> {
-        session.updatedAt = Date.now();
-        await fs.promises.writeFile(this.getFilePath(session.id), JSON.stringify(session, null, 2));
+        // In Supabase context, saveSession is effectively update
+        const { error } = await this.supabase
+            .from('chat_sessions')
+            .update({
+                title: session.title, // Title might have changed?
+                messages: session.messages,
+                updated_at: new Date().toISOString()
+            })
+            .eq('id', session.id)
+            .eq('user_id', this.userId);
+
+        if (error) throw new Error(`Failed to save session: ${error.message}`);
     }
 
     async getSession(id: string): Promise<ChatSessionData | null> {
-        try {
-            const data = await fs.promises.readFile(this.getFilePath(id), 'utf-8');
-            return JSON.parse(data);
-        } catch (error) {
-            return null;
-        }
+        const { data, error } = await this.supabase
+            .from('chat_sessions')
+            .select('*')
+            .eq('id', id)
+            .eq('user_id', this.userId)
+            .single();
+
+        if (error || !data) return null;
+
+        return this.mapToSessionData(data);
     }
 
     async deleteSession(id: string): Promise<boolean> {
-        try {
-            await fs.promises.unlink(this.getFilePath(id));
-            return true;
-        } catch (error) {
-            return false;
-        }
+        const { error } = await this.supabase
+            .from('chat_sessions')
+            .delete()
+            .eq('id', id)
+            .eq('user_id', this.userId);
+
+        return !error;
     }
 
     async listSessions(): Promise<Omit<ChatSessionData, 'messages'>[]> {
-        try {
-            const files = await fs.promises.readdir(this.storageDir);
-            const sessions = await Promise.all(
-                files
-                    .filter(f => f.endsWith('.json'))
-                    .map(async f => {
-                        try {
-                            const data = await fs.promises.readFile(path.join(this.storageDir, f), 'utf-8');
-                            const session = JSON.parse(data);
-                            return {
-                                id: session.id,
-                                title: session.title,
-                                createdAt: session.createdAt,
-                                updatedAt: session.updatedAt
-                            };
-                        } catch (e) {
-                            return null;
-                        }
-                    })
-            );
-            return sessions
-                .filter((s): s is Omit<ChatSessionData, 'messages'> => s !== null)
-                .sort((a, b) => b.updatedAt - a.updatedAt);
-        } catch (error) {
-            return [];
-        }
+        const { data, error } = await this.supabase
+            .from('chat_sessions')
+            .select('id, title, created_at, updated_at')
+            .eq('user_id', this.userId)
+            .order('updated_at', { ascending: false });
+
+        if (error) return [];
+
+        return (data || []).map((row: any) => ({
+            id: row.id,
+            title: row.title,
+            createdAt: new Date(row.created_at).getTime(),
+            updatedAt: new Date(row.updated_at).getTime()
+        }));
     }
 
     async updateSessionMessages(id: string, messages: Message[]): Promise<boolean> {
-        const session = await this.getSession(id);
-        if (!session) return false;
+        const { error } = await this.supabase
+            .from('chat_sessions')
+            .update({
+                messages: messages,
+                updated_at: new Date().toISOString()
+            })
+            .eq('id', id)
+            .eq('user_id', this.userId);
 
-        session.messages = messages;
-        await this.saveSession(session);
-        return true;
+        return !error;
+    }
+
+    private mapToSessionData(row: any): ChatSessionData {
+        return {
+            id: row.id,
+            title: row.title,
+            createdAt: new Date(row.created_at).getTime(),
+            updatedAt: new Date(row.updated_at).getTime(),
+            messages: row.messages || []
+        };
     }
 }

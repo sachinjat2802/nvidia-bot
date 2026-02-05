@@ -11,6 +11,7 @@
     --surface: #12121e;
     --surface-hover: #1a1a2b;
     --text-primary: #f0f0f3;
+    --text-on-primary: #000000;
     --text-secondary: #b8b9c1;
     --text-muted: #888995;
     --border: rgba(255, 255, 255, 0.08);
@@ -25,6 +26,7 @@
     --surface: #f7f7f8;
     --surface-hover: #eeeeef;
     --text-primary: #000000;
+    --text-on-primary: #ffffff;
     --text-secondary: #4b4b4b;
     --text-muted: #717171;
     --border: rgba(0, 0, 0, 0.1);
@@ -39,6 +41,7 @@
     --surface: #0a0a0a;
     --surface-hover: #141414;
     --text-primary: #ffffff;
+    --text-on-primary: #000000;
     --text-secondary: #a0a0a0;
     --text-muted: #666666;
     --border: rgba(255, 255, 255, 0.1);
@@ -53,6 +56,7 @@
     --surface: #2f2f2f;
     --surface-hover: #3a3a3a;
     --text-primary: #ececf1;
+    --text-on-primary: #ffffff;
     --text-secondary: #c5c5d2;
     --text-muted: #9a9ab0;
     --border: rgba(255, 255, 255, 0.1);
@@ -61,8 +65,11 @@
 body {
     background-color: var(--background);
     color: var(--text-primary);
-    overflow: hidden;
-    /* Prevent body scroll */
+}
+
+/* Allow scrolling on auth pages */
+.page-auth {
+    overflow-y: auto;
 }
 
 /* Custom Scrollbar */
@@ -91,6 +98,17 @@ body {
     border: 1px solid var(--border);
 }
 
+/* Theme-aware logo - invert for dark themes (logo is likely dark) */
+[data-theme="cyber"] .logo-img,
+[data-theme="pitch-black"] .logo-img,
+[data-theme="chatgpt"] .logo-img {
+    filter: invert(1);
+}
+
+[data-theme="light"] .logo-img {
+    filter: invert(0);
+}
+
 .glow-text {
     text-shadow: 0 0 10px var(--primary);
 }
@@ -106,4 +124,19 @@ body {
 
 .hide-scrollbar::-webkit-scrollbar {
     display: none;
+}
+
+/* React Flow Controls Fix */
+.react-flow__controls-button {
+    background: var(--surface) !important;
+    border-bottom: 1px solid var(--border) !important;
+    fill: var(--text-primary) !important;
+}
+
+.react-flow__controls-button svg {
+    fill: var(--text-primary) !important;
+}
+
+.react-flow__controls-button:hover {
+    background: var(--surface-hover) !important;
 }

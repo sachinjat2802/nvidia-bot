@@ -2,15 +2,22 @@ import { EventEmitter } from 'events';
 import { Event, Trigger, EventHandler } from './types';
 import { WorkflowEngine } from '../workflow-engine';
 import { WorkflowDefinition } from '../workflow';
+import { SupabaseWorkflowService } from '../lib/supabase';
+import { NVIDIAClient } from '../nvidia-client';
+import { loadConfig } from '../config';
 
 export class EventBus extends EventEmitter {
     private handlers: EventHandler[] = [];
     private triggers: Map<string, Trigger> = new Map();
     private workflowEngine: WorkflowEngine;
+    private workflowService?: SupabaseWorkflowService;
+    private nvidiaClient?: any;
 
-    constructor(workflowEngine: WorkflowEngine) {
+    constructor(workflowEngine: WorkflowEngine, options?: { workflowService?: SupabaseWorkflowService; nvidiaClient?: any }) {
         super();
         this.workflowEngine = workflowEngine;
+        this.workflowService = options?.workflowService;
+        this.nvidiaClient = options?.nvidiaClient;
 
         // Default handler: Check triggers and execute workflows
         this.on('event', async (event: Event) => {
@@ -26,6 +33,12 @@ export class EventBus extends EventEmitter {
     public registerTrigger(trigger: Trigger): void {
         this.triggers.set(trigger.id, trigger);
         console.log(`[EventBus] Registered trigger: ${trigger.id} (${trigger.type}) -> Workflow ${trigger.workflowId}`);
+    }
+
+    public async initializeWithService(service: SupabaseWorkflowService, nvidiaClient?: any): Promise<void> {
+        this.workflowService = service;
+        this.nvidiaClient = nvidiaClient;
+        console.log('[EventBus] Initialized with workflow service and NVIDIA client');
     }
 
     private async processEvent(event: Event): Promise<void> {
@@ -56,25 +69,112 @@ export class EventBus extends EventEmitter {
     }
 
     private async executeWorkflow(workflowId: string, event: Event): Promise<void> {
-        // In a real app, we would load the definition from DB/File
-        // Here we assume the IDs passed are valid or we need a way to look them up.
-        // Since WorkflowEngine doesn't store definitions (only executions), 
-        // we'll need a mechanism to fetch definitions.
-        // FOR NOW: We will assume we have a way to define workflows or pass a "template" workflow.
-
-        // HACK for demo: Create a dynamic workflow definition based on the event
-        // In reality, you'd fetch `WorkflowDefinition` from a DB by `workflowId`.
-
         try {
-            // Just logging for now as we don't have a "WorkflowDefinition Store" yet.
-            console.log(`[EventBus] Triggering workflow ${workflowId} with payload:`, JSON.stringify(event.payload).substring(0, 100));
+            if (!this.workflowService) {
+                throw new Error('Workflow service not initialized. Call initializeWithService() first.');
+            }
 
-            // If the user provided a mechanism to look up workflows, we'd use it.
-            // We will emit a 'workflow_trigger' event that main app can listen to and actually run the engine.
-            this.emit('workflow_trigger', { workflowId, event });
+            // Fetch the workflow definition from the database
+            const workflowRecord = await this.workflowService.getWorkflow(workflowId);
+            if (!workflowRecord) {
+                console.error(`[EventBus] Workflow not found: ${workflowId}`);
+                return;
+            }
 
-        } catch (error) {
+            if (!workflowRecord.is_active) {
+                console.log(`[EventBus] Workflow ${workflowId} is not active, skipping`);
+                return;
+            }
+
+            const workflow = workflowRecord.definition;
+
+            // Prepare input context from event
+            const inputContext: Record<string, any> = {
+                event: {
+                    type: event.type,
+                    source: event.source,
+                    payload: event.payload,
+                    timestamp: event.timestamp,
+                },
+                ...event.payload, // Flatten payload for easy access
+            };
+
+            // Initialize engine if not already done
+            if (!this.nvidiaClient) {
+                const config = loadConfig();
+                this.nvidiaClient = new (await import('../nvidia-client')).NVIDIAClient(config);
+            }
+
+            // Create service with the workflow owner's user_id
+            const userService = new SupabaseWorkflowService(workflowRecord.user_id);
+            const engine = new WorkflowEngine(this.nvidiaClient, {
+                supabaseService: userService
+            });
+
+            // Load integrations
+            const integrations = await userService.listIntegrations();
+            await engine.setIntegrations(integrations);
+
+            // Create execution record
+            const executionRecord = await userService.createExecution({
+                workflowId: workflowRecord.id,
+                workflowVersion: workflowRecord.version,
+                status: 'running',
+                inputContext: inputContext,
+                startedAt: new Date(),
+            });
+
+            console.log(`[EventBus] Executing workflow ${workflowId} (${workflowRecord.name}) with engine`);
+
+            // Execute workflow
+            try {
+                const execution = await engine.execute(workflow, inputContext);
+
+                // Update execution record
+                await userService.updateExecution(executionRecord.id, {
+                    status: execution.status,
+                    output_context: execution.outputContext,
+                    step_results: execution.stepResults,
+                    completed_at: new Date().toISOString(),
+                });
+
+                // Increment workflow execution count
+                await userService.incrementWorkflowExecution(workflowRecord.id);
+
+                console.log(`[EventBus] Workflow ${workflowId} completed with status: ${execution.status}`);
+
+                // Emit completion event
+                this.emit('workflow_completed', {
+                    workflowId,
+                    executionId: executionRecord.id,
+                    status: execution.status,
+                    stepResults: execution.stepResults,
+                });
+
+            } catch (executionError: any) {
+                // Update execution record with error
+                await userService.updateExecution(executionRecord.id, {
+                    status: 'failed',
+                    error: executionError.message,
+                    completed_at: new Date().toISOString(),
+                });
+
+                console.error(`[EventBus] Workflow ${workflowId} failed:`, executionError.message);
+
+                // Emit failure event
+                this.emit('workflow_failed', {
+                    workflowId,
+                    executionId: executionRecord.id,
+                    error: executionError.message,
+                });
+            }
+
+        } catch (error: any) {
             console.error(`[EventBus] Failed to execute workflow ${workflowId}:`, error);
+            this.emit('workflow_error', {
+                workflowId,
+                error: error.message,
+            });
         }
     }
 }

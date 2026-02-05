@@ -1,220 +1,326 @@
-# NVIDIA Bot
+# Workflow Automation System
 
-A full-featured chatbot using NVIDIA's free models via the NVIDIA API. Includes both CLI and web interfaces with advanced workflow orchestration.
+A powerful n8n-like workflow automation platform built with Next.js, React Flow, and Supabase. Create, execute, and monitor complex automated workflows with 11+ node types including LLM, HTTP, Database, Email, Storage, and more.
 
 ## Features
 
-- **Dual Interface**: CLI and Web (browser-based) chat interfaces
-- **Streaming Responses**: Real-time token-by-token output
-- **180+ Models**: Support for all NVIDIA catalog models (Llama, Nemotron, Gemma, Phi, DeepSeek, Codestral, etc.)
-- **Model Selection**: Dropdown to switch models on the fly
-- **Chat History**: Persistent conversation context with configurable limit
-- **Workflow Orchestration**: Multi-step workflows with dependencies, conditionals, and more
-- **Modern UI**: Beautiful, responsive web interface with gradient design
-- **REST API**: Backend server with endpoints for chat, models, config, and workflows
-- **Easy Configuration**: `.env` file for API key and settings
+### Visual Workflow Editor
+- Drag-and-drop interface using React Flow
+- 11+ node types with distinct visual styles
+- Real-time connection visualization
+- Properties panel for detailed configuration
+- Save and load workflows
 
-## Prerequisites
+### Node Types
+1. **LLM** - Call NVIDIA AI models (Llama, Nemotron, Phi-3, Gemma, Mixtral)
+2. **HTTP** - Make HTTP requests with templating
+3. **Code** - Execute JavaScript/TypeScript code
+4. **Database** - Query PostgreSQL, MySQL, MongoDB, MSSQL, SQLite
+5. **Email** - Send emails via SMTP
+6. **Storage** - Cloud storage operations (S3, GCS, Azure Blob, FTP/SFTP)
+7. **Webhook** - Send webhooks to external services
+8. **Transform** - Map, filter, and sort data
+9. **Conditional** - Branch execution based on conditions
+10. **Delay** - Wait for specified time
+11. **File** - File system operations
 
+### Supabase Integration
+- Full database persistence
+- User authentication and authorization
+- Execution tracking and history
+- Integration credential management
+- Row Level Security (RLS) enabled
+
+### Trigger Types
+- **Webhook** - Trigger workflows via HTTP POST
+- **Schedule** - Cron-based scheduling (coming soon)
+- **Event** - Event-driven triggers (coming soon)
+
+### Execution Features
+- Topological dependency resolution
+- Context passing between steps
+- Output mapping to context variables
+- Error handling and retry logic
+- Real-time execution tracking
+- Step-by-step result inspection
+
+## Tech Stack
+
+- **Frontend**: Next.js 14, React 18, TypeScript, Tailwind CSS, React Flow
+- **Backend**: Next.js API Routes
+- **Database**: Supabase (PostgreSQL)
+- **AI**: NVIDIA NIM API
+- **Authentication**: NextAuth.js with Supabase
+
+## Setup
+
+### Prerequisites
 - Node.js 18+
-- NVIDIA API key (free from [NVIDIA API Catalog](https://integrate.api.nvidia.com))
+- Supabase account
+- NVIDIA API key
 
-## Installation
+### Installation
 
+1. Clone and install dependencies:
 ```bash
-cd nvidia-bot
 npm install
-npm run build
 ```
 
-## Configuration
-
-1. Copy `.env.example` to `.env`:
-   ```bash
-   copy .env.example .env
-   ```
-
-2. Edit `.env` and add your NVIDIA API key:
-   ```
-   NVIDIA_API_KEY=nvapi-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-   ```
-
-3. Optional: Change default model or other settings:
-   ```
-   DEFAULT_MODEL=meta/llama-3.1-70b-instruct
-   CHAT_HISTORY_LIMIT=50
-   ```
-
-## Usage
-
-### CLI Interface
-
-Start interactive chat:
+2. Configure environment variables:
 ```bash
-npm run start
-# or for development:
+cp .env.example .env
+```
+
+Edit `.env` with your values:
+```env
+# NVIDIA AI API
+NVIDIA_API_KEY=your-nvidia-api-key
+NVIDIA_BASE_URL=https://integrate.api.nvidia.com/v1
+DEFAULT_MODEL=meta/llama-3.1-70b-instruct
+
+# Supabase
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_ANON_KEY=your-supabase-anon-key
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
+```
+
+3. Set up Supabase database:
+```bash
+# Run the migration script in your Supabase SQL editor
+supabase/migrations/001_initial_workflow_schema.sql
+```
+
+4. Enable NextAuth.js:
+```bash
+# Install next-auth
+npm install next-auth
+```
+
+Configure `src/app/api/auth/[...nextauth]/route.ts` (create if needed).
+
+5. Run development server:
+```bash
 npm run dev
 ```
 
-CLI commands during chat:
-- `/clear` - Clear chat history
-- `/model` - Switch to a different model
-- `/exit` or `/quit` - Exit the bot
+Open http://localhost:3000
 
-List available models:
-```bash
-nvidia-bot models
+## Usage
+
+### Creating a Workflow
+
+1. Click "Create Workflow"
+2. Drag nodes from the left palette onto the canvas
+3. Connect nodes by dragging from output to input handles
+4. Click a node to configure its properties
+5. Set output mappings to pass data between steps
+6. Click "Save" to store in database
+7. Click "Execute" to run immediately
+
+### Example: LLM Processing Pipeline
+
+```
+Webhook Trigger (optional)
+    ↓
+HTTP Request (fetch data)
+    ↓
+Transform (extract fields)
+    ↓
+LLM (process with AI)
+    ↓
+Email (send results)
 ```
 
-Test API connection:
-```bash
-nvidia-bot test
-```
+### Template Variables
 
-### Web Interface
+Use `${variable}` syntax to reference context:
+- `${input}` - Original workflow input
+- `${context.key}` - Context variable
+- `${stepResults.stepId.output}` - Previous step output
 
-Start the web server:
-```bash
-npm run web
-# or for development with hot reload:
-npm run web:dev
-```
+Example: `Hello ${context.name}, your order ${input.orderId} is ready`
 
-Open your browser to: **http://localhost:3000**
+### Integration Management
 
-Web features:
-- Real-time streaming responses
-- Model selector dropdown (with refresh button)
-- Chat history display
-- Clear chat button
-- **Workflow tab** with visual editor and execution monitor
-- Responsive design for mobile and desktop
-
-## Workflow Orchestration
-
-NVIDIA Bot now supports multi-step workflow orchestration!
-
-### Quick Example
+Create stored integrations for reusable credentials:
 
 ```json
+POST /api/integrations
 {
-  "id": "my-workflow",
-  "name": "Analysis Workflow",
-  "steps": [
-    {
-      "id": "analyze",
-      "type": "llm",
-      "llmConfig": {
-        "systemPrompt": "You are an analyst.",
-        "content": "Analyze: '${input}'"
-      }
-    },
-    {
-      "id": "process",
-      "type": "code",
-      "dependsOn": ["analyze"],
-      "codeConfig": {
-        "language": "javascript",
-        "code": "return { length: context.analyze.response.length };"
-      }
-    }
-  ]
+  "type": "postgres",
+  "name": "Production DB",
+  "config": {
+    "host": "db.example.com",
+    "port": 5432,
+    "database": "prod",
+    "username": "user",
+    "password": "pass"
+  }
 }
 ```
 
-### Run Workflows
+Then reference in Database nodes by checking "Use Stored Integration".
 
-**Web UI**: Open the "Workflows" tab in the web interface
-**CLI**: `nvidia-bot workflow-run my-workflow.json`
-**API**: `POST /api/workflows` with workflow definition
+### Webhook Triggers
 
-See [WORKFLOWS.md](./WORKFLOWS.md) for complete documentation.
+1. Create a trigger:
+```json
+POST /api/triggers
+{
+  "workflowId": "your-workflow-id",
+  "type": "webhook",
+  "config": {}
+}
+```
+
+2. Get trigger URL from response: `/api/webhooks/{triggerId}`
+3. Send POST requests to trigger workflow:
+```bash
+curl -X POST https://your-app.com/api/webhooks/{triggerId} \
+  -H "Content-Type: application/json" \
+  -d '{"key": "value"}'
+```
 
 ## API Endpoints
 
-| Endpoint | Method | Description |
-|----------|--------|-------------|
-| `/api/chat` | POST | Send chat message (streaming or non-streaming) |
-| `/api/models` | GET | List all available models |
-| `/api/config` | GET | Get current configuration |
-| `/api/workflows` | POST | Start a workflow execution |
-| `/api/workflows` | GET | List all executions |
-| `/api/workflows/:id` | GET | Get execution details |
-| `/api/workflows/:id/stop` | POST | Stop a running execution |
-| `/health` | GET | Health check endpoint |
+### Workflows
+- `GET /api/workflows` - List workflows
+- `POST /api/workflows` - Create/update workflow
+- `GET /api/workflows/[id]` - Get workflow
+- `PUT /api/workflows/[id]` - Update workflow
+- `DELETE /api/workflows/[id]` - Delete workflow
+- `POST /api/workflows/[id]/execute` - Execute workflow
 
-### Chat API Example
+### Triggers
+- `GET /api/triggers` - List triggers
+- `POST /api/triggers` - Create trigger
+
+### Webhooks
+- `POST /api/webhooks/[triggerId]` - Trigger workflow
+- `GET /api/webhooks/[triggerId]` - Get trigger info
+
+### Integrations
+- `GET /api/integrations` - List integrations
+- `POST /api/integrations` - Create integration
+- `GET /api/integrations/[id]` - Get integration
+- `PUT /api/integrations/[id]` - Update integration
+- `DELETE /api/integrations/[id]` - Delete integration
+
+## Database Schema
+
+### Tables
+
+**workflows**
+- `id` (UUID, PK)
+- `user_id` (UUID, FK to auth.users)
+- `name`, `description`
+- `definition` (JSONB) - Full workflow definition
+- `tags` (text[]), `is_active` (boolean)
+- `created_at`, `updated_at`
+
+**triggers**
+- `id`, `user_id`, `workflow_id` (FK)
+- `type` (webhook/schedule/event)
+- `config` (JSONB), `is_active`
+- `last_triggered_at`, `created_at`
+
+**executions**
+- `id`, `user_id`, `workflow_id`
+- `workflow_version`, `status`
+- `input_context`, `output_context` (JSONB)
+- `step_results` (JSONB), `error`
+- `started_at`, `completed_at`, `created_at`
+
+**integrations**
+- `id`, `user_id`, `type`, `name`
+- `config` (JSONB) - Encrypted in production
+- `is_active`, `created_at`, `updated_at`
+
+All tables have Row Level Security enabled.
+
+## Architecture
+
+```
+src/
+├── app/
+│   ├── api/
+│   │   ├── workflows/          # Workflow CRUD + execute
+│   │   ├── triggers/           # Trigger management
+│   │   ├── webhooks/[triggerId]/  # Webhook endpoints
+│   │   └── integrations/       # Integration CRUD
+│   └── page.tsx                # Main UI
+├── components/
+│   ├── WorkflowEditor.tsx      # Main editor canvas
+│   ├── WorkflowNode.tsx        # Custom node component
+│   ├── NodePalette.tsx         # Draggable node palette
+│   └── PropertiesPanel.tsx     # Node configuration
+├── lib/
+│   └── supabase.ts             # Supabase service layer
+├── workflow-engine.ts          # Execution engine
+└── workflow.ts                 # Type definitions
+```
+
+## Security Notes
+
+- Code execution uses `eval()` in a basic sandbox - use `vm2` or `isolated-vm` in production
+- Integration credentials stored in plain text - encrypt in production
+- Webhook endpoints are public - add signature verification
+- Implement proper rate limiting
+- Add input validation and sanitization
+- Enable audit logging
+
+## Production Considerations
+
+1. **Security**
+   - Replace `eval()` with proper sandbox (vm2, isolated-vm)
+   - Encrypt integration configs
+   - Add webhook signature verification
+   - Implement rate limiting
+   - Add request validation
+
+2. **Performance**
+   - Add Redis caching for integrations
+   - Implement workflow step caching
+   - Use queue system for async execution
+   - Add database connection pooling
+
+3. **Reliability**
+   - Add retry logic with exponential backoff
+   - Implement circuit breakers
+   - Add dead letter queue
+   - Set up monitoring and alerting
+
+4. **Scalability**
+   - Horizontal scaling with stateless workers
+   - Database read replicas
+   - CDN for static assets
+   - Edge functions for webhooks
+
+## Testing
 
 ```bash
-curl -N -X POST http://localhost:3000/api/chat \
-  -H "Content-Type: application/json" \
-  -d '{"messages":[{"role":"user","content":"Hello!"}],"model":"meta/llama-3.1-70b-instruct"}'
+# Run tests
+npm test
+
+# Build
+npm run build
+
+# Start production
+npm start
 ```
-
-## Available Models
-
-The bot automatically fetches all available models from the NVIDIA API. Some popular ones:
-
-- `meta/llama-3.1-70b-instruct` - Meta's Llama 3.1 (70B)
-- `meta/llama-3.3-70b-instruct` - Latest Llama 3.3
-- `nvidia/nemotron-4-340b-instruct` - NVIDIA's largest instruct model
-- `nvidia/llama-3.1-nemotron-70b-instruct` - NVIDIA-tuned Llama
-- `mistralai/mistral-large` - Mistral's flagship model
-- `google/gemma-2-9b-it` - Google's Gemma 2
-- `microsoft/phi-3.5-mini-instruct` - Microsoft's Phi-3.5
-- `deepseek-ai/deepseek-r1` - DeepSeek reasoning model
-
-See full list with: `nvidia-bot models` or the web interface dropdown.
-
-## Environment Variables
-
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `NVIDIA_API_KEY` | Your NVIDIA API key (required) | - |
-| `NVIDIA_BASE_URL` | NVIDIA API endpoint | `https://integrate.api.nvidia.com/v1` |
-| `DEFAULT_MODEL` | Default model for chat | `meta/llama-3.1-70b-instruct` |
-| `CHAT_HISTORY_LIMIT` | Max messages in context | `50` |
-| `PORT` | Web server port | `3000` |
-
-## Project Structure
-
-```
-nvidia-bot/
-├── src/
-│   ├── index.ts        # CLI entry point
-│   ├── web-server.ts   # Express web server
-│   ├── config.ts       # Configuration management
-│   ├── nvidia-client.ts # NVIDIA API client
-│   ├── chat.ts         # Chat session management
-│   └── public/         # Web frontend
-│       ├── index.html
-│       ├── styles.css
-│       └── app.js
-├── .env                # Your configuration (create from .env.example)
-├── .env.example
-├── package.json
-├── tsconfig.json
-└── README.md
-```
-
-## Troubleshooting
-
-**Error: NVIDIA_API_KEY is not set**
-- Ensure you've copied `.env.example` to `.env`
-- Add your API key to the `.env` file
-
-**API connection errors (404)**
-- Some models have different naming conventions. Use the model list from `nvidia-bot models` to see valid model IDs
-- The API key must have access to the selected model
-
-**Port already in use**
-- Change the `PORT` environment variable: `set PORT=3001 && npm run web`
-
-**Web interface not loading**
-- Check the server is running: `npm run web`
-- Verify no firewall blocking port 3000
-- Check browser console for errors
 
 ## License
 
 MIT
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make changes
+4. Submit a pull request
+
+## Support
+
+For issues and feature requests, please use the GitHub Issues page.

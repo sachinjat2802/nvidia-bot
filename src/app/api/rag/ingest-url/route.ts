@@ -1,31 +1,39 @@
-
 import { NextRequest, NextResponse } from 'next/server';
-import { PineconeVectorStore } from '@/rag/pinecone-store';
+import { getServerSession } from 'next-auth';
 import { RAGManager } from '@/rag/rag-manager';
-import { WebDataSource } from '@/rag/index';
+import { WebDataSource } from '@/rag/connectors/web';
+import { validate, RAGIngestSchema, formatValidationErrors } from '@/lib/validation';
+import { authOptions } from '@/lib/auth-options';
+import { SupabaseVectorStore } from '@/rag/supabase-store';
 
 export async function POST(req: NextRequest) {
     try {
-        const { url, indexName } = await req.json();
+        const session = await getServerSession(authOptions);
+        if (!session?.user?.id) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
+
+        const body = await req.json();
+
+        // Validate request
+        const { data, errors } = validate(RAGIngestSchema, body);
+        if (errors || !data) {
+            return NextResponse.json(
+                { error: 'Validation failed', details: errors ? formatValidationErrors(errors) : 'Invalid data' },
+                { status: 400 }
+            );
+        }
+
+        const { url } = data;
 
         if (!url) {
             return NextResponse.json({ error: 'URL is required' }, { status: 400 });
         }
 
-        const apiKey = process.env.PINECONE_API_KEY;
-        const targetIndex = indexName || process.env.PINECONE_INDEX || 'nvidia-bot';
-
-        let store;
-
-        if (apiKey) {
-            store = new PineconeVectorStore(apiKey, targetIndex);
-        } else {
-            // Fallback to local
-            const { SimpleVectorStore } = await import('@/rag/simple-store');
-            store = new SimpleVectorStore();
-            console.log('Using SimpleVectorStore (Fallback)');
-        }
-
+        // Initialize Supabase Vector Store
+        // Use a default model ID for now, or fetch active one
+        // For simplicity, we use a nil UUID for the default model logic in the store
+        const store = new SupabaseVectorStore(session.user.id, '00000000-0000-0000-0000-000000000000');
         const manager = new RAGManager(store);
         const webSource = new WebDataSource(url);
 

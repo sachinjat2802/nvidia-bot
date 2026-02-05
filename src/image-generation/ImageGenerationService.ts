@@ -76,7 +76,7 @@ export class ImageGenerationService {
             case '2:3':
                 return { width: Math.round(baseSize * 2 / 3), height: baseSize };
             case '3:2':
-                return { width: baseSize, height: Math.round(baseSize * 2 / 3) };
+                return { width: baseSize, height: Math.round(baseSize * 3 / 2) };
             case 'custom':
                 return {
                     width: customWidth || baseSize,
@@ -250,10 +250,15 @@ Return ONLY the refined prompt, nothing else.`;
 
                     console.log('NVIDIA FLUX.1-dev API Request Payload:', JSON.stringify(payload, null, 2));
 
+                    const apiKey = this.config.apiKey;
+                    if (!apiKey) {
+                        throw new Error('NVIDIA_API_KEY is not configured. Please set it in environment variables.');
+                    }
+
                     const response = await fetch('https://ai.api.nvidia.com/v1/genai/black-forest-labs/flux.1-dev', {
                         method: 'POST',
                         headers: {
-                            'Authorization': `Bearer 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`,
+                            'Authorization': `Bearer ${apiKey}`,
                             'Accept': 'application/json',
                             'Content-Type': 'application/json'
                         },
@@ -303,42 +308,9 @@ Return ONLY the refined prompt, nothing else.`;
 
                 } catch (apiError: any) {
                     console.error(`Image ${i + 1} generation failed:`, apiError);
-                    // Fallback to placeholder on API error
-                    const placeholderImage = await this.createPlaceholderImage(
-                        `Error: ${apiError.message}`,
-                        dimensions,
-                        i
-                    );
-
-                    const imageId = this.generateId();
-                    const filename = `${imageId}.${params.format}`;
-                    const filepath = `${this.imageStorageDir}/${filename}`;
-
-                    const fs = await import('fs');
-                    fs.writeFileSync(filepath, placeholderImage);
-
-                    const generatedImage: GeneratedImage = {
-                        id: imageId,
-                        url: `/generated-images/${filename}`,
-                        localPath: filepath,
-                        prompt: params.prompt,
-                        negativePrompt: params.negativePrompt,
-                        params: { ...params },
-                        seed,
-                        format: params.format,
-                        width: dimensions.width,
-                        height: dimensions.height,
-                        createdAt: new Date(),
-                        metadata: {
-                            model: 'error-placeholder',
-                            generationTimeMs: Date.now() - startTime,
-                            cost: 0,
-                        } as any  // Allow error property in fallback case
-                    };
-
-                    this.generatedImages.set(imageId, generatedImage);
-                    imageIds.push(imageId);
-                    images.push(generatedImage);
+                    // Don't create placeholder - return error instead
+                    // If batchSize > 1, we could continue for other images, but for now fail the whole batch
+                    throw apiError;
                 }
             }
 
@@ -370,26 +342,6 @@ Return ONLY the refined prompt, nothing else.`;
                 warnings: [error.message]
             };
         }
-    }
-
-    // Create a placeholder image (for demo/testing)
-    private async createPlaceholderImage(prompt: string, dimensions: { width: number; height: number }, index: number): Promise<Buffer> {
-        // In production, this would be replaced by actual API call
-        // For now, create a simple SVG placeholder
-        const color = ['#ff6b6b', '#4ecdc4', '#45b7d1', '#96ceb4'][index % 4];
-
-        const svg = `<?xml version="1.0" encoding="UTF-8"?>
-<svg width="${dimensions.width}" height="${dimensions.height}" xmlns="http://www.w3.org/2000/svg">
-  <rect width="100%" height="100%" fill="${color}"/>
-  <text x="50%" y="50%" font-family="Arial" font-size="24" fill="white" text-anchor="middle" dy=".3em">
-    Image Placeholder
-  </text>
-  <text x="50%" y="60%" font-family="Arial" font-size="14" fill="white" text-anchor="middle" dy=".3em">
-    ${prompt.substring(0, 50)}...
-  </text>
-</svg>`;
-
-        return Buffer.from(svg);
     }
 
     // Generate variations of an existing image
@@ -595,3 +547,4 @@ Return ONLY the refined prompt, nothing else.`;
         this.imageBatches.clear();
     }
 }
+

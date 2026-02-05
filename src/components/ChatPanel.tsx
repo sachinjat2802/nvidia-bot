@@ -28,6 +28,7 @@ export const ChatPanel: React.FC = () => {
     const [isHistoryOpen, setIsHistoryOpen] = useState(false);
     const [currentLanguage, setCurrentLanguage] = useState('English');
     const [currentAge, setCurrentAge] = useState('25');
+    const [streamError, setStreamError] = useState<string | null>(null);
 
     const languages = [
         'English', 'Hindi', 'Bengali', 'Telugu', 'Marathi', 'Tamil', 'Gujarati', 'Urdu', 'Kannada', 'Odia', 'Malayalam', 'Punjabi'
@@ -42,53 +43,51 @@ export const ChatPanel: React.FC = () => {
     // Initial load: models and sessions
     useEffect(() => {
         // Fetch models
-        fetch('/api/models')
+        fetch('/api/models', {
+            credentials: 'include'
+        })
             .then(res => res.json())
             .then(data => {
                 const availableModels = data.models || [];
                 setModels(availableModels);
                 const defaultModel = availableModels.find((m: any) => m.id === data.default) || availableModels[0];
                 setCurrentModel(defaultModel?.id || '');
+            })
+            .catch(err => {
+                console.error('Failed to fetch models:', err);
             });
 
         // Fetch sessions
         fetchSessions();
     }, []);
 
-    const STORAGE_KEY = 'moonu_bot_history';
-
-    const fetchSessions = () => {
+    const fetchSessions = async () => {
         try {
-            const data = localStorage.getItem(STORAGE_KEY);
-            if (data) {
-                const parsed = JSON.parse(data);
-                // Sort by updatedAt descending
-                const sessionList = Object.values(parsed).map((s: any) => ({
-                    id: s.id,
-                    title: s.title,
-                    updatedAt: s.updatedAt
-                })).sort((a: any, b: any) => b.updatedAt - a.updatedAt);
-                setSessions(sessionList as ChatSession[]);
+            const res = await fetch('/api/history', {
+                headers: { 'Content-Type': 'application/json' }
+            });
+            if (res.ok) {
+                const data = await res.json();
+                setSessions(data);
             }
         } catch (err) {
-            console.error('Failed to fetch sessions from local storage', err);
+            console.error('Failed to fetch sessions', err);
         }
     };
 
-    const loadSession = (id: string) => {
+    const loadSession = async (id: string) => {
         setIsLoading(true);
         try {
-            const data = localStorage.getItem(STORAGE_KEY);
-            if (data) {
-                const parsed = JSON.parse(data);
-                const session = parsed[id];
+            const res = await fetch(`/api/history/${id}`);
+            if (res.ok) {
+                const session = await res.json();
                 if (session && session.messages) {
                     setMessages(session.messages);
                     setCurrentSessionId(id);
                 }
             }
         } catch (err) {
-            console.error('Failed to load session from local storage', err);
+            console.error('Failed to load session', err);
         } finally {
             setIsLoading(false);
             setIsHistoryOpen(false);
@@ -99,23 +98,19 @@ export const ChatPanel: React.FC = () => {
         setMessages([]);
         setCurrentSessionId(null);
         setIsHistoryOpen(false);
+        setStreamError(null);
     };
 
-    const deleteSession = (e: React.MouseEvent, id: string) => {
+    const deleteSession = async (e: React.MouseEvent, id: string) => {
         e.stopPropagation();
         try {
-            const data = localStorage.getItem(STORAGE_KEY);
-            if (data) {
-                const parsed = JSON.parse(data);
-                delete parsed[id];
-                localStorage.setItem(STORAGE_KEY, JSON.stringify(parsed));
-                setSessions(prev => prev.filter(s => s.id !== id));
-                if (currentSessionId === id) {
-                    startNewChat();
-                }
+            await fetch(`/api/history/${id}`, { method: 'DELETE' });
+            setSessions(prev => prev.filter(s => s.id !== id));
+            if (currentSessionId === id) {
+                startNewChat();
             }
         } catch (err) {
-            console.error('Failed to delete session from local storage', err);
+            console.error('Failed to delete session', err);
         }
     };
 
@@ -140,36 +135,46 @@ export const ChatPanel: React.FC = () => {
         setMessages(newMessages);
         setInput('');
         setIsLoading(true);
+        setStreamError(null);
 
         try {
-            // Handle session creation/update in local storage
             let sessionId = currentSessionId;
-            const storageData = localStorage.getItem(STORAGE_KEY);
-            const allSessions = storageData ? JSON.parse(storageData) : {};
+            let currentTitle = '';
 
+            // 1. Create or Update Session
             if (!sessionId) {
                 // New session
-                sessionId = Date.now().toString();
-                allSessions[sessionId] = {
-                    id: sessionId,
-                    title: input.slice(0, 30) + (input.length > 30 ? '...' : ''),
-                    updatedAt: Date.now(),
-                    messages: [userMessage]
-                };
-                setCurrentSessionId(sessionId);
+                currentTitle = input.slice(0, 30) + (input.length > 30 ? '...' : '');
+                const createRes = await fetch('/api/history', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        title: currentTitle,
+                        messages: [userMessage]
+                    })
+                });
+                if (createRes.ok) {
+                    const sessionData = await createRes.json();
+                    sessionId = sessionData.id;
+                    setCurrentSessionId(sessionId);
+                    fetchSessions(); // Refresh list
+                }
             } else {
                 // Update existing session
-                if (allSessions[sessionId]) {
-                    allSessions[sessionId].messages = newMessages;
-                    allSessions[sessionId].updatedAt = Date.now();
-                }
+                await fetch(`/api/history/${sessionId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        messages: newMessages
+                    })
+                });
             }
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(allSessions));
-            fetchSessions();
 
+            // 2. Clear to stream response
             const response = await fetch('/api/chat', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
                 body: JSON.stringify({
                     messages: [
                         {
@@ -188,51 +193,94 @@ export const ChatPanel: React.FC = () => {
                 })
             });
 
-            if (!response.ok) throw new Error('Failed to send message');
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`Failed to send message: ${response.status} ${errorText}`);
+            }
 
             const reader = response.body?.getReader();
             const decoder = new TextDecoder();
             let assistantContent = '';
+            let buffer = '';
 
             const assistantId = (Date.now() + 1).toString();
             setMessages(prev => [...prev, { id: assistantId, role: 'assistant', content: '' }]);
 
-            while (reader) {
+            if (!reader) {
+                throw new Error('No response reader available');
+            }
+
+            while (true) {
                 const { done, value } = await reader.read();
                 if (done) break;
 
-                const chunk = decoder.decode(value);
-                const lines = chunk.split('\n');
+                const chunk = decoder.decode(value, { stream: true });
+                buffer += chunk;
+                const lines = buffer.split('\n');
+                buffer = lines.pop() || ''; // Keep incomplete line in buffer
+
                 for (const line of lines) {
-                    if (line.startsWith('data: ')) {
-                        const dataStr = line.slice(6);
-                        if (dataStr === '[DONE]') continue;
-                        try {
-                            const data = JSON.parse(dataStr);
-                            if (data.content) {
-                                assistantContent += data.content;
-                                setMessages(prev => prev.map(m => m.id === assistantId ? { ...m, content: assistantContent } : m));
-                            }
-                        } catch (e) { }
+                    const trimmedLine = line.trim();
+                    if (!trimmedLine.startsWith('data: ')) continue;
+
+                    const dataStr = trimmedLine.slice(6);
+                    if (dataStr === '[DONE]') continue;
+
+                    try {
+                        const data = JSON.parse(dataStr);
+                        if (data.content) {
+                            assistantContent += data.content;
+                            setMessages(prev => prev.map(m => m.id === assistantId ? { ...m, content: assistantContent } : m));
+                        }
+                        // Handle error in stream
+                        if (data.error) {
+                            throw new Error(data.error);
+                        }
+                    } catch (parseError) {
+                        console.error('Failed to parse stream data:', parseError, 'Raw data:', dataStr);
                     }
                 }
             }
 
-            // Save the complete conversation to local storage
-            const finalAssistantMessage: Message = { id: assistantId, role: 'assistant', content: assistantContent };
-            if (sessionId) {
-                const refreshedData = localStorage.getItem(STORAGE_KEY);
-                const currentAllSessions = refreshedData ? JSON.parse(refreshedData) : {};
-                if (currentAllSessions[sessionId]) {
-                    currentAllSessions[sessionId].messages = [...newMessages, finalAssistantMessage];
-                    currentAllSessions[sessionId].updatedAt = Date.now();
-                    localStorage.setItem(STORAGE_KEY, JSON.stringify(currentAllSessions));
-                    fetchSessions();
+            // Process any remaining buffer
+            if (buffer.trim().startsWith('data: ')) {
+                const dataStr = buffer.trim().slice(6);
+                if (dataStr !== '[DONE]') {
+                    try {
+                        const data = JSON.parse(dataStr);
+                        if (data.content) {
+                            assistantContent += data.content;
+                            setMessages(prev => prev.map(m => m.id === assistantId ? { ...m, content: assistantContent } : m));
+                        }
+                        if (data.error) {
+                            throw new Error(data.error);
+                        }
+                    } catch (parseError) {
+                        console.error('Failed to parse final buffer:', parseError, 'Raw data:', dataStr);
+                    }
                 }
             }
 
-        } catch (error) {
-            console.error(error);
+            // 3. Save assistant response to history
+            if (sessionId) {
+                const finalAssistantMessage: Message = { id: assistantId, role: 'assistant', content: assistantContent };
+                const updatedMessages = [...newMessages, finalAssistantMessage];
+
+                // Update local state is already done incrementally
+                // Persist to DB
+                await fetch(`/api/history/${sessionId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        messages: updatedMessages
+                    })
+                });
+                fetchSessions(); // Update timestamps
+            }
+
+        } catch (error: any) {
+            console.error('Chat error:', error);
+            setStreamError(error.message || 'Failed to get response');
         } finally {
             setIsLoading(false);
         }
@@ -364,6 +412,13 @@ export const ChatPanel: React.FC = () => {
                     ))}
                     <div ref={messagesEndRef} />
                 </div>
+
+                {/* Error Display */}
+                {streamError && (
+                    <div className="absolute top-20 left-1/2 transform -translate-x-1/2 bg-red-500/10 border border-red-500/30 text-red-500 px-4 py-2 rounded-lg text-sm z-20">
+                        Error: {streamError}
+                    </div>
+                )}
 
                 {/* Input Area */}
                 <div className="absolute bottom-0 left-0 right-0 p-4 md:p-6 bg-gradient-to-t from-background via-background/95 to-transparent pointer-events-none">

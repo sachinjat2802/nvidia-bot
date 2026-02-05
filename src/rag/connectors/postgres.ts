@@ -10,6 +10,15 @@ export interface PostgresConfig extends PoolConfig {
     };
 }
 
+// Whitelist of allowed characters for table and column names
+const ALLOWED_IDENTIFIER_CHARS = /^[a-zA-Z_][a-zA-Z0-9_]*$/;
+
+function validateIdentifier(name: string, field: string): void {
+    if (!ALLOWED_IDENTIFIER_CHARS.test(name)) {
+        throw new Error(`Invalid ${field}: "${name}". Only alphanumeric and underscore allowed, must start with letter.`);
+    }
+}
+
 export class PostgresDataSource implements DataSource {
     name = 'PostgreSQL Database';
     private pool: Pool;
@@ -18,6 +27,17 @@ export class PostgresDataSource implements DataSource {
 
     constructor(config: PostgresConfig) {
         this.config = config;
+        
+        // Validate table and column names to prevent SQL injection
+        validateIdentifier(config.tableName, 'tableName');
+        validateIdentifier(config.columns.id, 'columns.id');
+        validateIdentifier(config.columns.content, 'columns.content');
+        if (config.columns.metadata) {
+            config.columns.metadata.forEach((col, index) => {
+                validateIdentifier(col, `columns.metadata[${index}]`);
+            });
+        }
+
         this.pool = new Pool(config);
     }
 
@@ -48,7 +68,8 @@ export class PostgresDataSource implements DataSource {
         const metadataCols = columns.metadata ? columns.metadata.join(', ') : '';
         const selectCols = `${columns.id} as id, ${columns.content} as content${metadataCols ? ', ' + metadataCols : ''}`;
 
-        const query = `SELECT ${selectCols} FROM ${tableName} LIMIT 100`; // Limit for safety in this demo
+        // Use parameterized query with validated identifiers
+        const query = `SELECT ${selectCols} FROM ${tableName} LIMIT 100`;
 
         try {
             const res = await this.pool.query(query);

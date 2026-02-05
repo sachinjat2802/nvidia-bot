@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Inter, Orbitron, JetBrains_Mono } from 'next/font/google';
 import './globals.css';
+import Providers from './providers';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 const orbitron = Orbitron({ subsets: ['latin'], variable: '--font-orbitron' });
@@ -36,7 +37,7 @@ export default function RootLayout({
     return (
         <html lang="en">
             <body className={`${inter.variable} ${orbitron.variable} ${jetbrainsMono.variable} font-sans`}>
-                {children}
+                <Providers>{children}</Providers>
             </body>
         </html>
     );

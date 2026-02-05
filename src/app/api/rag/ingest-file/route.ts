@@ -1,12 +1,17 @@
-
 import { NextRequest, NextResponse } from 'next/server';
-import { PineconeVectorStore } from '@/rag/pinecone-store';
+import { getServerSession } from 'next-auth';
 import { RAGManager } from '@/rag/rag-manager';
 import { RawTextDataSource } from '@/rag/connectors/raw-text';
 import { extractTextFromBuffer } from '@/file-processor';
+import { authOptions } from '@/lib/auth-options';
 
 export async function POST(req: NextRequest) {
     try {
+        const session = await getServerSession(authOptions);
+        if (!session?.user?.id) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
+
         const formData = await req.formData();
         const files = formData.getAll('file') as File[];
 
@@ -14,18 +19,40 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: 'No files uploaded' }, { status: 400 });
         }
 
-        // Initialize Vector Store
-        const apiKey = process.env.PINECONE_API_KEY;
-        const indexName = (formData.get('indexName') as string) || process.env.PINECONE_INDEX || 'nvidia-bot';
-        let store;
-
-        if (apiKey) {
-            store = new PineconeVectorStore(apiKey, indexName);
-        } else {
-            const { SimpleVectorStore } = await import('@/rag/simple-store');
-            store = new SimpleVectorStore();
+        // Validate file count
+        const MAX_FILES = 10;
+        if (files.length > MAX_FILES) {
+            return NextResponse.json(
+                { error: `Too many files. Maximum ${MAX_FILES} files allowed per request.` },
+                { status: 400 }
+            );
         }
 
+        // Validate each file
+        const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+        const ALLOWED_EXTENSIONS = ['.txt', '.pdf', '.docx', '.doc', '.md', '.html', '.json', '.csv'];
+
+        for (const file of files) {
+            if (file.size > MAX_FILE_SIZE) {
+                return NextResponse.json(
+                    { error: `File ${file.name} is too large. Maximum size is ${MAX_FILE_SIZE / 1024 / 1024}MB.` },
+                    { status: 400 }
+                );
+            }
+
+            const ext = '.' + file.name.split('.').pop()?.toLowerCase();
+            if (!ALLOWED_EXTENSIONS.includes(ext)) {
+                return NextResponse.json(
+                    { error: `File type not allowed: ${file.name}. Allowed types: ${ALLOWED_EXTENSIONS.join(', ')}` },
+                    { status: 400 }
+                );
+            }
+        }
+
+        // Initialize Vector Store
+        // Initialize Supabase Vector Store
+        const { SupabaseVectorStore } = await import('@/rag/supabase-store');
+        const store = new SupabaseVectorStore(session.user.id, '00000000-0000-0000-0000-000000000000');
         const manager = new RAGManager(store);
         let successCount = 0;
 
