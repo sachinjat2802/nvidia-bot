@@ -15,6 +15,7 @@ const nextConfig = {
     reactStrictMode: true,
     // Ensure that we can use older packages if needed
     webpack: (config) => {
+        config.externals = [...(config.externals || []), 'vm2'];
         config.resolve.fallback = { fs: false, path: false };
         return config;
     },
