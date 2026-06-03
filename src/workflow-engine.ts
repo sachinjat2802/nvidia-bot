@@ -1,3 +1,5 @@
+import nodemailer from 'nodemailer';
+import { NodeVM } from 'vm2';
 import { WorkflowDefinition, WorkflowStep, ExecutionResult, StepResult, WorkflowExecutionContext, LLMConfig, CodeConfig, HttpConfig, DatabaseConfig, EmailConfig, StorageConfig, WebhookConfig, TransformConfig, ConditionalConfig, DelayConfig, FileConfig, IntegrationRecord } from './workflow';
 import { NVIDIAClient } from './nvidia-client';
 
@@ -114,39 +116,26 @@ class SafeExpressionEvaluator {
         }
 
         try {
-            // Create a restricted sandbox with only safe globals
-            const sandbox: any = {
-                context: { ...context },
-                console: {
-                    log: (...args: any[]) => console.log('[Workflow Code]', ...args),
-                    error: (...args: any[]) => console.error('[Workflow Code]', ...args),
-                    warn: (...args: any[]) => console.warn('[Workflow Code]', ...args),
-                    info: (...args: any[]) => console.info('[Workflow Code]', ...args),
+            const vm = new NodeVM({
+                console: 'redirect',
+                sandbox: { context: { ...context } },
+                require: {
+                    external: false,
+                    builtin: [],
                 },
-                JSON,
-                Date,
-                Math,
-                Array,
-                Object,
-                String,
-                Number,
-                Boolean,
-                Map,
-                Set,
-                Promise,
-                Reflect,
-                Symbol,
-                Error,
-                TypeError,
-                RangeError,
-                ReferenceError,
-                SyntaxError,
-                URIError,
-            };
+            });
 
-            // Create function with sandbox keys as parameters
-            const fn = new Function(...Object.keys(sandbox), code);
-            return fn(...Object.values(sandbox));
+            vm.on('console.log', (...args: any[]) => console.log('[Workflow Code]', ...args));
+            vm.on('console.error', (...args: any[]) => console.error('[Workflow Code]', ...args));
+            vm.on('console.warn', (...args: any[]) => console.warn('[Workflow Code]', ...args));
+            vm.on('console.info', (...args: any[]) => console.info('[Workflow Code]', ...args));
+
+            const wrappedCode = `
+                module.exports = (function() {
+                    ${code}
+                })();
+            `;
+            return vm.run(wrappedCode);
         } catch (error: any) {
             throw new Error(`Code execution failed: ${error.message}`);
         }
@@ -653,22 +642,39 @@ export class WorkflowEngine {
 
     private async executeEmailWithIntegration(integration: IntegrationRecord, config: EmailConfig, context: Record<string, any>): Promise<any> {
         const emailConfig = integration.config;
-        // In production, would use nodemailer with SMTP or SendGrid/Mailgun API
-        const to = Array.isArray(config.to) ? config.to : [config.to];
+
+        const transporter = nodemailer.createTransport({
+            host: emailConfig.host,
+            port: emailConfig.port,
+            secure: emailConfig.secure,
+            auth: {
+                user: emailConfig.username,
+                pass: emailConfig.password
+            }
+        });
+
         const subject = this.resolveTemplate(config.subject, context);
         const body = this.resolveTemplate(config.body, context);
 
-        console.log(`[Email via ${integration.name}] To: ${to.join(', ')}`);
-        console.log(`[Email] Subject: ${subject}`);
-
-        return {
-            success: true,
-            to,
-            subject,
-            bodyLength: body.length,
-            integration: integration.name,
-            method: emailConfig.type || 'smtp'
+        const mailOptions: any = {
+            from: emailConfig.username,
+            to: config.to,
+            subject: subject,
+            cc: config.cc,
+            bcc: config.bcc
         };
+
+        if (config.isHtml) {
+            mailOptions.html = body;
+        } else {
+            mailOptions.text = body;
+        }
+
+        console.log(`[Email] Sending to ${config.to} via ${integration.name}: ${subject}`);
+
+        const info = await transporter.sendMail(mailOptions);
+
+        return { success: true, to: config.to, subject: subject, messageId: info.messageId };
     }
 
     private async executeStorage(step: WorkflowStep, context: Record<string, any>, integrations: IntegrationRecord[]): Promise<any> {

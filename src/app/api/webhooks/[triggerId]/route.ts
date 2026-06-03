@@ -3,8 +3,9 @@ import { SupabaseWorkflowService } from '@/lib/supabase';
 import { WorkflowEngine } from '@/workflow-engine';
 import { NVIDIAClient } from '@/nvidia-client';
 import { loadConfig } from '@/config';
-import { validate, TriggerSchema, formatValidationErrors } from '@/lib/validation';
+
 import { createHmac, timingSafeEqual } from 'crypto';
+import { validate, formatValidationErrors } from '@/lib/validation';
 
 // POST /api/webhooks/[triggerId] - Trigger workflow via webhook
 export async function POST(
